@@ -1,0 +1,6 @@
+.bg-gate {
+  background: url('./assets/gate2.png');
+  background-repeat: repeat;
+  background-position: start;
+  background-size: 32% 48%;
+}
