@@ -9,7 +9,7 @@ import React from "react";
 import FormSelect from "../components/formik/FormSelect";
 import BarChart from "../components/BarChart";
 
-export default function Form() {
+export default function GermanForm() {
   const [showGlobal, setShowGlobal] = useState(false);
   const [closePop, setClosePop] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -100,8 +100,8 @@ export default function Form() {
   const attributeMapping = {
     status_of_existing_checking_account: [
       { value: "A11", label: "Less than 0 GHS" },
-      { value: "A12", label: "Between 0 and 200k GHS" },
-      { value: "A13", label: "200k or more GHS" },
+      { value: "A12", label: "Between 0 and 200 GHS" },
+      { value: "A13", label: "200 or more GHS" },
       { value: "A14", label: "No account" },
     ],
     credit_history: [
