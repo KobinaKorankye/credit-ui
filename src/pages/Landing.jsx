@@ -19,6 +19,7 @@ export default function Landing() {
       <Button
         className={"shadow-lg hover:shadow hover:shadow-teal-500 rounded-lg"}
         text={"Adehyeman"}
+        onClick={()=>navigate('/adehyeman')}
       />
     </div>
   );

@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import React from "react";
 import FormSelect from "../components/formik/FormSelect";
 import BarChart from "../components/BarChart";
+import RegularInput from "../components/RegularInput";
 
 export default function GermanForm() {
   const [showGlobal, setShowGlobal] = useState(false);
@@ -254,7 +255,8 @@ export default function GermanForm() {
             onClick={() => setShowGlobal(false)}
           >
             Show local importances
-          </div>
+          </div>import RegularInput from './../components/RegularInput';
+
           <div
             className="text-red-400 hover:underline cursor-pointer"
             onClick={() => setClosePop(true)}
@@ -274,6 +276,7 @@ export default function GermanForm() {
         >
           <>
             <div className="w-full grid md:grid-cols-2 gap-4">
+              <RegularInput label="First Name" type="text"/>
               <FormInput label="User ID" name="person_id" type="text" />
               <FormInput label="Age" name="age" type="number" />
               <FormSelect
