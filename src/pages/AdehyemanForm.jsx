@@ -190,7 +190,7 @@ export default function GermanForm() {
 
   const fieldOptions = {
     id_type : [
-      {label: "Ghana Card"}, {label: "Passport"}, {label: "Voter's ID"}, {label: "Driver's License"}
+      {label: "Ghana Card"}, {label: "Passport"}, {label: "Voter's ID"}, {label: "Driver's License"},
     ],
     employment_field : [
       {label: "Agriculture"},
@@ -205,16 +205,16 @@ export default function GermanForm() {
       {label: "Legal"},
       {label: "Military"},
       {label: "Retail"},
-      {label: "Other"}
+      {label: "Other"},
     ],
     bonds_or_investments: [
-      {label: "YES"}, {label: "NO"}
+      {label: "YES"}, {label: "NO"},
     ],
     forex_account: [
-      {label: "YES"}, {label: "NO"}
+      {label: "YES"}, {label: "NO"},
     ],
     loan_default: [
-      {label: "YES"}, {label: "NO"}
+      {label: "YES"}, {label: "NO"},
     ],
     mode_of_payment: [
       {label: "Cash"}, {label: "Mobile Money"}, {label: "Cheque"}, {label: "Bank Transfer"}, {label: "Salary Deduction"},

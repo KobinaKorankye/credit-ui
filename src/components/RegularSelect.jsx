@@ -6,6 +6,7 @@ export default function RegularSelect({
   boxClassName,
   options,
   label,
+  labelClass,
   icon,
   name,
   value,
