@@ -188,39 +188,6 @@ export default function GermanForm() {
     ],
   };
 
-  const fieldOptions = {
-    id_type : [
-      {label: "Ghana Card"}, {label: "Passport"}, {label: "Voter's ID"}, {label: "Driver's License"},
-    ],
-    employment_field : [
-      {label: "Agriculture"},
-      {label: "Arts"},
-      {label: "Education"},
-      {label: "Emergency Services"},
-      {label: "Engineering"},
-      {label: "Finance"},
-      {label: "Health"},
-      {label: "Infomation Technology"},
-      {label: "Law Enforcement"},
-      {label: "Legal"},
-      {label: "Military"},
-      {label: "Retail"},
-      {label: "Other"},
-    ],
-    bonds_or_investments: [
-      {label: "YES"}, {label: "NO"},
-    ],
-    forex_account: [
-      {label: "YES"}, {label: "NO"},
-    ],
-    loan_default: [
-      {label: "YES"}, {label: "NO"},
-    ],
-    mode_of_payment: [
-      {label: "Cash"}, {label: "Mobile Money"}, {label: "Cheque"}, {label: "Bank Transfer"}, {label: "Salary Deduction"},
-    ]
-  }
-
   const onSubmit = async (form, { resetForm }) => {
     setLoading(true);
     try {
@@ -310,166 +277,177 @@ import RegularSelect from './../components/RegularSelect';
           onSubmit={onSubmit}
         >
           <>
-            <div className="w-full grid md:grid-cols-2 gap-4">
-            <h3>Personal Details</h3>
-              <FormInput label="User ID" name="person_id" type="text" />
-              <RegularInput label="First Name" type="text"/>
-              <RegularInput label="Middle Names" type="text"/>
-              <RegularInput label="Last Name" type="text"/>
-              <FormInput label="Age" name="age" type="number" />
-              <FormSelect
-                label="Telephone"
-                name="telephone"
-                options={attributeMapping.telephone}
-              />
-              <RegularInput label="Email" type="text"/>
-              <RegularSelect label="ID Type" options={fieldOptions.id_type}/>
-              <RegularInput label="ID Number" type="text"/>
-              <RegularInput label="Nationality" type="text"/>
-              <RegularInput label="Residential Address" type="text"/>
-              <FormSelect
-                label="Sex"
-                name="sex"
-                options={attributeMapping.sex}
-              />
-              <FormSelect
-                label="Marital Status"
-                name="marital_status"
-                options={attributeMapping.marital_status}
-              />
-              <FormSelect
-                label="Foreign Worker"
-                name="foreign_worker"
-                options={attributeMapping.foreign_worker}
-              />
+            <div className="w-1/4 grid md:4"><FormInput label="User ID" name="person_id" type="text" /></div>
+            <div className="text=2xl font-bold pt-10 pb-2">Personal Details</div>
               
+              <div className="w-full grid md:grid-cols-3 gap-4">
+                <RegularInput label="First Name" type="text"/>
+                <RegularInput label="Middle Names" type="text"/>
+                <RegularInput label="Last Name" type="text"/>
+                <FormInput label="Age" name="age" type="number" />
+                <FormSelect
+                  label="Telephone"
+                  name="telephone"
+                  options={attributeMapping.telephone}
+                />
+                <RegularInput label="Email" type="text"/>
+                <RegularSelect label="ID Type" options={["Ghana Card", "Passport", "Voter's ID", "Driver's License"]}/>
+                <RegularInput label="ID Number" type="text"/>
+                <RegularInput label="Nationality" type="text"/>
+                <RegularInput label="Residential Address" type="text"/>
+                <FormSelect
+                  label="Sex"
+                  name="sex"
+                  options={attributeMapping.sex}
+                />
+                <FormSelect
+                  label="Marital Status"
+                  name="marital_status"
+                  options={attributeMapping.marital_status}
+                />
+                <FormSelect
+                  label="Foreign Worker"
+                  name="foreign_worker"
+                  options={attributeMapping.foreign_worker}
+                />
+              </div>
+              
+              <hr className="w-full mt-20 border-t-50 border-black"/>
+              <h2 className="font-bold pt-10 pb-2">Financial Details</h2>
+              <div className="w-full grid md:grid-cols-3 gap-4">
+                <RegularInput label="Customer ID/Account Number" type="text"/>
+                <RegularInput label="Monthly Income" type="text"/>
+                <RegularInput label="Occupation" type="text"/>
+                <FormSelect
+                  label="Employment Type"
+                  name="job"
+                  options={attributeMapping.job}
+                />
+                <RegularInput label="Employer Name" type="text"/>
+                <RegularInput label="Employer Address" type="text"/>
+                <RegularSelect label="Field of Employment" options={["Agriculture", "Arts", "Education", "Emergency Services", "Engineering", "Finance", "Health", "Information Technology", "Law Enforcement", "Law", "Legal", "Military", "Retail", "Other"]}/>
+                <RegularInput label="If you selected Other, please specify:" type="text"/>
+                <FormSelect
+                  label="Present Employment Since"
+                  name="present_employment_since"
+                  options={attributeMapping.present_employment_since}
+                />
+                <FormInput
+                  label="Number of People Being Liable to Provide Maintenance For"
+                  name="number_of_people_being_liable_to_provide_maintenance_for"
+                  type="number"
+                />
+                <FormSelect
+                  label="Status of Existing Checking Account"
+                  name="status_of_existing_checking_account"
+                  options={attributeMapping.status_of_existing_checking_account}
+                />
+                <FormSelect
+                  label="Savings Account/Bonds"
+                  name="savings_account_bonds"
+                  options={attributeMapping.savings_account_bonds}
+                />
 
-              <RegularInput label="Customer ID/Account Number" type="text"/>
-              <RegularInput label="Monthly Income" type="text"/>
-              <RegularInput label="Occupation" type="text"/>
-              <FormSelect
-                label="Employment Type"
-                name="job"
-                options={attributeMapping.job}
-              />
-              <RegularInput label="Employer Name" type="text"/>
-              <RegularInput label="Employer Address" type="text"/>
-              <RegularInput label="Field of Employment" options={fieldOptions.employment_field}/>
-              <RegularInput label="If you selected Other, please specify:" type="text"/>
-              <FormSelect
-                label="Present Employment Since"
-                name="present_employment_since"
-                options={attributeMapping.present_employment_since}
-              />
-              <FormInput
-                label="Number of People Being Liable to Provide Maintenance For"
-                name="number_of_people_being_liable_to_provide_maintenance_for"
-                type="number"
-              />
-              <FormSelect
-                label="Status of Existing Checking Account"
-                name="status_of_existing_checking_account"
-                options={attributeMapping.status_of_existing_checking_account}
-              />
-              <FormSelect
-                label="Savings Account/Bonds"
-                name="savings_account_bonds"
-                options={attributeMapping.savings_account_bonds}
-              />
+                <RegularSelect label="Do you have any Bonds or other investments?" options={["Yes", "No"]}/>
+                <RegularSelect label="Do you have any Forex Account?" options={["Yes", "No"]}/>
+                <FormSelect
+                  label="Housing"
+                  name="housing"
+                  options={attributeMapping.housing}
+                />
+                <FormInput
+                  label="Present Residence Since"
+                  name="present_residence_since"
+                  type="number"
+                />
+                <FormSelect
+                  label="Property"
+                  name="property"
+                  options={attributeMapping.property}
+                />
+              </div>
 
-              <RegularInput label="Do you have any Bonds or other investments?" options={fieldOptions.bonds_or_investments}/>
-              <RegularInput label="Do you have any Forex Account?" options={fieldOptions.forex_account}/>
-              <FormSelect
-                label="Housing"
-                name="housing"
-                options={attributeMapping.housing}
-              />
-              <FormInput
-                label="Present Residence Since"
-                name="present_residence_since"
-                type="number"
-              />
-              <FormSelect
-                label="Property"
-                name="property"
-                options={attributeMapping.property}
-              />
+              <hr className="w-full mt-20 border-t-50 border-black"/>
+              <h2 className="font-bold pt-10 pb-5">Loan Details</h2>
+              <div className="w-full grid md:grid-cols-3 gap-4">
+                <FormSelect
+                  label="Purpose"
+                  name="purpose"
+                  options={attributeMapping.purpose}
+                />
+                <FormInput
+                  label="Credit Amount"
+                  name="credit_amount"
+                  type="number"
+                />
+                <FormInput
+                  label="Installment Rate in Percentage of Disposable Income"
+                  name="installment_rate_in_percentage_of_disposable_income"
+                  type="number"
+                />
+                <FormInput label="Duration" name="duration" type="number" />
+                <FormInput
+                  label="Number of Existing Credits at This Bank"
+                  name="number_of_existing_credits_at_this_bank"
+                  type="number"
+                />
+                <RegularSelect label="Have you defaulted on a loan before?" options={["Yes", "No"]}/>
+                <FormSelect
+                  label="Credit History"
+                  name="credit_history"
+                  options={attributeMapping.credit_history}
+                />            
+                <FormSelect
+                  label="Other Installment Plans"
+                  name="other_installment_plans"
+                  options={attributeMapping.other_installment_plans}
+                />
+                <RegularSelect label="Mode of Loan Payment" options={["Cash", "Mobile Money", "Bank Transfer", "Salary Deduction", "Cheque"]}/>
+                <FormSelect
+                  label="Other Debtors/Guarantors"
+                  name="other_debtors_guarantors"
+                  options={attributeMapping.other_debtors_guarantors}
+                />
+              </div>
 
-              <h3>Loan Details</h3>
-              <FormSelect
-                label="Purpose"
-                name="purpose"
-                options={attributeMapping.purpose}
-              />
-              <FormInput
-                label="Credit Amount"
-                name="credit_amount"
-                type="number"
-              />
-              <FormInput
-                label="Installment Rate in Percentage of Disposable Income"
-                name="installment_rate_in_percentage_of_disposable_income"
-                type="number"
-              />
-              <FormInput label="Duration" name="duration" type="number" />
-              <FormInput
-                label="Number of Existing Credits at This Bank"
-                name="number_of_existing_credits_at_this_bank"
-                type="number"
-              />
-              <RegularInput label="Have you defaulted on a loan before?" options={fieldOptions.loan_default}/>
-              <FormSelect
-                label="Credit History"
-                name="credit_history"
-                options={attributeMapping.credit_history}
-              />            
-              <FormSelect
-                label="Other Installment Plans"
-                name="other_installment_plans"
-                options={attributeMapping.other_installment_plans}
-              />
-              <RegularInput label="Mode of Loan Payment" options={fieldOptions.mode_of_payment}/>
-              <FormSelect
-                label="Other Debtors/Guarantors"
-                name="other_debtors_guarantors"
-                options={attributeMapping.other_debtors_guarantors}
-              />
-              
-              <h3>Guarantors Information</h3>
-              <h4>Guarantor 1</h4>
-              <RegularInput label="Surname" type="text"/>
-              <RegularInput label="First Name" type="text"/>
-              <RegularInput label="Middle Names" type="text"/>
-              <RegularInput label="Date of Birth" type="calendar"/>
-              <RegularSelect label="ID Type" options={fieldOptions.id_type}/>
-              <RegularInput label="ID Number" type="text"/>
-              <RegularInput label="Nationality" type="text"/>
-              <RegularInput label="Phone Number" type="text"/>
-              <RegularInput label="Email" type="text"/>
-              <RegularInput label="Residential Address" type="text"/>
-              <RegularInput label="Relationship to Applicant" type="text"/>
-              <RegularInput label="Employer Name" type="text"/>
-              <RegularInput label="Occupation" type="text"/>
-              
-              <h4>Guarantor 2</h4>
-              <RegularInput label="Surname" type="text"/>
-              <RegularInput label="First Name" type="text"/>
-              <RegularInput label="Middle Names" type="text"/>
-              <RegularInput label="Date of Birth" type="calendar"/>
-              <RegularSelect label="ID Type" options={fieldOptions.id_type}/>
-              <RegularInput label="ID Number" type="text"/>
-              <RegularInput label="Nationality" type="text"/>
-              <RegularInput label="Phone Number" type="text"/>
-              <RegularInput label="Email" type="text"/>
-              <RegularInput label="Residential Address" type="text"/>
-              <RegularInput label="Relationship to Applicant" type="text"/>
-              <RegularInput label="Employer Name" type="text"/>
-              <RegularInput label="Occupation" type="text"/>
+              <hr className="w-full mt-20 border-t-50 border-black"/>
+              <h3 className="font-bold pt-10 pb-1">Guarantors Information</h3>
+              <h4 className="font-bold pt-5 pb-5">Guarantor 1</h4>
+              <div className="w-full grid md:grid-cols-3 gap-4">
+                <RegularInput label="Surname" type="text"/>
+                <RegularInput label="First Name" type="text"/>
+                <RegularInput label="Middle Names" type="text"/>
+                <RegularInput label="Date of Birth" type="calendar"/>
+                <RegularSelect label="ID Type" options={["Ghana Card", "Passport", "Voter's ID", "Driver's License"]}/>
+                <RegularInput label="ID Number" type="text"/>
+                <RegularInput label="Nationality" type="text"/>
+                <RegularInput label="Phone Number" type="text"/>
+                <RegularInput label="Email" type="text"/>
+                <RegularInput label="Residential Address" type="text"/>
+                <RegularInput label="Relationship to Applicant" type="text"/>
+                <RegularInput label="Employer Name" type="text"/>
+                <RegularInput label="Occupation" type="text"/>
+              </div>
+              <h4 className="font-bold pt-10 pb-5">Guarantor 2</h4>
+              <div className="w-full grid md:grid-cols-3 gap-4 pb-5">
+                <RegularInput label="Surname" type="text"/>
+                <RegularInput label="First Name" type="text"/>
+                <RegularInput label="Middle Names" type="text"/>
+                <RegularInput label="Date of Birth" type="calendar"/>
+                <RegularSelect label="ID Type" options={["Ghana Card", "Passport", "Voter's ID", "Driver's License"]}/>
+                <RegularInput label="ID Number" type="text"/>
+                <RegularInput label="Nationality" type="text"/>
+                <RegularInput label="Phone Number" type="text"/>
+                <RegularInput label="Email" type="text"/>
+                <RegularInput label="Residential Address" type="text"/>
+                <RegularInput label="Relationship to Applicant" type="text"/>
+                <RegularInput label="Employer Name" type="text"/>
+                <RegularInput label="Occupation" type="text"/>
+              </div>
               
               
               
-              
-            </div>
+            
             <Submit
               className={"bg-slate-900 text-slate-100 my-20 rounded-none py-2"}
               text={loading ? "LOADING.." : "Submit"}

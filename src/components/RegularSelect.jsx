@@ -46,8 +46,8 @@ export default function RegularSelect({
             {""}
           </option>
           {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
+            <option key={option} value={option}>
+              {option}
             </option>
           ))}
         </select>
