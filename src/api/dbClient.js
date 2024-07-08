@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const dbClient = axios.create({
-  baseURL: "http://localhost:4000/",
+  baseURL: "https://credit-db-backend.onrender.com",
 });
 
 export default dbClient;
