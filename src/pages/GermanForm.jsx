@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FormInput from "../components/formik/FormInput";
 import * as Yup from "yup";
 import { Formik } from "formik";
@@ -10,9 +10,11 @@ import FormSelect from "../components/formik/FormSelect";
 import RegularSelect from "../components/RegularSelect";
 import BarChart from "../components/BarChart";
 import KDEChart from "../components/KDEChart";
-import data from "../data/data.json";
+// import data from "../data/data.json";
 import NormalBarChart from "../components/NormalBarChart";
 import { mappings } from "../constants";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchGraphData } from "../store/graphDataSlice";
 
 export default function GermanForm() {
   const [show, setShow] = useState("graph");
@@ -20,6 +22,17 @@ export default function GermanForm() {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState({});
   const [formEntry, setFormEntry] = useState({});
+
+  const data = useSelector((state)=>state.graphData.data)
+
+  const dispatch = useDispatch()
+  const status = useSelector((state) => state.graphData.status);
+
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(fetchGraphData());
+    }
+  }, [dispatch]);
 
   const validationSchema = Yup.object().shape({
     person_id: Yup.string()

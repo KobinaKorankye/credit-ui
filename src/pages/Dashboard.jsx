@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SideNavLayout from "../layouts/SideNavLayout";
 import Button from "../components/Button";
 import { useNavigate } from "react-router-dom";
-import data from "../data/data.json";
+// import data from "../data/data.json";
 import KDEChart from "../components/KDEChart";
 import PieChart from "../components/PieChart";
 import { useEffect } from "react";
@@ -10,12 +10,25 @@ import dbClient from "../api/dbClient";
 import { toast } from "react-toastify";
 import Table from "../components/Table";
 import SearchBar from "../components/SearchBar";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchGraphData } from "../store/graphDataSlice";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [users, setUsers] = useState([]);
+
+  const data = useSelector((state)=>state.graphData.data)
+
+  const dispatch = useDispatch()
+  const status = useSelector((state) => state.graphData.status);
+
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(fetchGraphData());
+    }
+  }, [dispatch]);
 
   const getUsers = async () => {
     setLoading(true);
@@ -38,6 +51,12 @@ export default function Dashboard() {
   useEffect(() => {
     getUsers();
   }, []);
+
+  if(status !== "succeeded"){
+    return (
+      <div>Loading....</div>
+    )
+  }
 
   return (
     <SideNavLayout>
