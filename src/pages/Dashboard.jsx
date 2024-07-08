@@ -63,6 +63,8 @@ export default function Dashboard() {
                 "bg-gradient-to-b from-red-600 via-amber-500 to-green-700 hover:scale-90 duration-200 rounded-lg"
               }
               text={"Adehyeman"}
+              onClick={() => navigate("/adehyeman")}
+
             />
           </div>
         </div>

@@ -11,7 +11,7 @@ import BarChart from "../components/BarChart";
 import RegularInput from "../components/RegularInput";
 import RegularSelect from "../components/RegularSelect";
 
-export default function GermanForm() {
+export default function AdehyemanForm() {
   const [showGlobal, setShowGlobal] = useState(false);
   const [closePop, setClosePop] = useState(false);
   const [loading, setLoading] = useState(false);
