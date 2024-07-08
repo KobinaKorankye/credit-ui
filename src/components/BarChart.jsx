@@ -44,12 +44,12 @@ const BarChart = ({ data, bias, global }) => {
             {
               from: -Infinity,
               to: 0,
-              color: "#8B0000",
+              color: "#FF4560",
             },
             {
               from: 0,
               to: Infinity,
-              color: global? "#000" :"#006400", 
+              color: global? "#008FFB" :"#008FFB", 
             },
           ],
         },
@@ -97,11 +97,11 @@ const BarChart = ({ data, bias, global }) => {
         !global &&
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{ width: '10px', height: '10px', backgroundColor: '#8B0000', marginRight: '5px' }}></div>
+          <div style={{ width: '10px', height: '10px', backgroundColor: '#FF4560', marginRight: '5px' }}></div>
           <span className="text-sm" style={{ color: '#000' }}>Defaulting</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
-          <div style={{ width: '10px', height: '10px', backgroundColor: '#006400', marginRight: '5px' }}></div>
+          <div style={{ width: '10px', height: '10px', backgroundColor: '#008FFB', marginRight: '5px' }}></div>
           <span className="text-sm" style={{ color: '#000' }}>Not Defaulting</span>
         </div>
       </div>
