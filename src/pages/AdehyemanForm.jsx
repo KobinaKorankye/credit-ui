@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FormInput from "../components/formik/FormInput";
 import * as Yup from "yup";
 import { Formik } from "formik";
@@ -10,12 +10,30 @@ import FormSelect from "../components/formik/FormSelect";
 import BarChart from "../components/BarChart";
 import RegularInput from "../components/RegularInput";
 import RegularSelect from "../components/RegularSelect";
+import KDEChart from "../components/KDEChart";
+// import data from "../data/data.json";
+import NormalBarChart from "../components/NormalBarChart";
+import { mappings } from "../constants";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchGraphData } from "../store/graphDataSlice";
 
 export default function AdehyemanForm() {
-  const [showGlobal, setShowGlobal] = useState(false);
+  const [show, setShow] = useState("graph");
   const [closePop, setClosePop] = useState(false);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState({});
+  const [formEntry, setFormEntry] = useState({});
+
+  const data = useSelector((state)=>state.graphData.data)
+
+  const dispatch = useDispatch()
+  const status = useSelector((state) => state.graphData.status);
+
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(fetchGraphData());
+    }
+  }, [dispatch]);
 
   const validationSchema = Yup.object().shape({
     person_id: Yup.string()
@@ -188,10 +206,27 @@ export default function AdehyemanForm() {
     ],
   };
 
+  const catColumns = [
+    "status_of_existing_checking_account",
+    "credit_history",
+    "purpose",
+    "savings_account_bonds",
+    "present_employment_since",
+    "personal_status_and_sex",
+    "other_debtors_guarantors",
+    "property",
+    "other_installment_plans",
+    "housing",
+    "job",
+    "telephone",
+    "foreign_worker",
+  ];
+
   const onSubmit = async (form, { resetForm }) => {
     setLoading(true);
     try {
       const { data } = await client.post("/predict", form);
+      setFormEntry(form);
       console.log(form);
       toast.success("Sent Successfully", {
         position: "top-left",
@@ -208,9 +243,103 @@ export default function AdehyemanForm() {
     setLoading(false);
   };
 
+  const numericColumns = [
+    "duration",
+    "credit_amount",
+    "installment_rate_in_percentage_of_disposable_income",
+    "present_residence_since",
+    "age",
+    "number_of_existing_credits_at_this_bank",
+  ];
+
+  const [numColumn, setNumColumn] = useState("credit_amount");
+  const [catColumn, setCatColumn] = useState(
+    "status_of_existing_checking_account"
+  );
+
+  const getPredClass = () => {
+    if (response?.prediction == "Possible Non Defaulter") {
+      return 1;
+    } else if (response?.prediction == "Possible Defaulter") {
+      return 0;
+    }
+  };
+
   return (
     <>
-      {Object.keys(response).length != 0 && !closePop && !showGlobal && (
+      {Object.keys(response).length != 0 && !closePop && show == "graph" && (
+        <div className="absolute bg-white w-full h-full flex md:p-10 md:px-32 flex-col items-center overflow-y-scroll">
+          <div className="w-full grid grid-cols-2 gap-5">
+            <div className="flex flex-col">
+              <div className="text-xl text-gray-900 font-bold my-2">
+                Population Distributions for Numeric Features
+              </div>
+              <div className="w-64 mb-20">
+                <RegularSelect
+                  label={"Select numerical feature to plot"}
+                  value={numColumn}
+                  options={numericColumns}
+                  onChange={(e) => setNumColumn(e.target.value)}
+                />
+              </div>
+              <KDEChart
+                title={numColumn}
+                highlightPoint={formEntry[numColumn]}
+                columnArray={[...data[numColumn], formEntry[numColumn]]}
+                classArray={[...data["class"], getPredClass()]}
+              />
+            </div>
+            <div className="flex flex-col">
+              <div className="text-xl text-gray-900 font-bold my-2">
+                Population Counts for Categorical Features
+              </div>
+              <div className="w-64 mb-20">
+                <RegularSelect
+                  label={"Select categorical feature to plot"}
+                  value={catColumn}
+                  options={catColumns}
+                  onChange={(e) => setCatColumn(e.target.value)}
+                />
+              </div>
+              <NormalBarChart
+                highlightPoint={mappings[formEntry[catColumn]]}
+                columnArray={[
+                  ...data[catColumn],
+                  mappings[formEntry[catColumn]],
+                ]}
+                classArray={[...data["class"], getPredClass()]}
+                columnTitle={catColumn}
+              />
+            </div>
+          </div>
+          <div className="text-xl text-gray-700 font-bold my-2">
+            Prediction: {response.prediction}
+            <br />
+            Probability: {parseFloat(response.proba.toFixed(4)) * 100}%
+          </div>
+          <div className="flex gap-5">
+            <div
+              className="bg-green-700 text-white cursor-pointer px-2 py-1 my-2 rounded"
+              onClick={() => setShow("global")}
+            >
+              Show global importances
+            </div>
+            <div
+              className="bg-green-700 text-white cursor-pointer px-2 py-1 my-2 rounded"
+              onClick={() => setShow("local")}
+            >
+              Show local importances
+            </div>
+          </div>
+          <div
+            className="mt-5 text-red-400 hover:underline cursor-pointer"
+            onClick={() => setClosePop(true)}
+          >
+            Exit
+          </div>
+        </div>
+      )}
+      {Object.keys(response).length != 0 && !closePop && show == "local" && (
         <div className="absolute bg-white w-full h-full flex p-10 flex-col items-center overflow-y-scroll">
           <div className="text-xl text-gray-900 font-bold my-2">
             Feature Influences on Prediction
@@ -223,23 +352,31 @@ export default function AdehyemanForm() {
           </div>
 
           <div className="text-xl text-gray-700 font-bold my-2">
-            {response.model_decision}
+            Prediction: {response.prediction}
+            <br />
+            Probability: {parseFloat(response.proba.toFixed(4)) * 100}%
           </div>
           <div
-            className="bg-gray-800 text-white cursor-pointer px-2 py-1 my-2 rounded"
-            onClick={() => setShowGlobal(true)}
+            className="bg-green-700 text-white cursor-pointer px-2 py-1 my-2 rounded"
+            onClick={() => setShow("global")}
           >
             Show global importances
           </div>
           <div
-            className="text-red-400 hover:underline cursor-pointer"
+              className="bg-green-700 text-white cursor-pointer px-2 py-1 my-2 rounded"
+              onClick={() => setShow("graph")}
+            >
+              Show graphs
+            </div>
+          <div
+            className="mt-5 text-red-400 hover:underline cursor-pointer"
             onClick={() => setClosePop(true)}
           >
             Exit
           </div>
         </div>
       )}
-      {Object.keys(response).length != 0 && !closePop && showGlobal && (
+      {Object.keys(response).length != 0 && !closePop && show == "global" && (
         <div className="absolute bg-white w-full h-full flex p-10 flex-col items-center overflow-y-scroll">
           <div className="text-xl text-gray-900 font-bold my-2">
             Global Feature Importances
@@ -249,18 +386,25 @@ export default function AdehyemanForm() {
           </div>
 
           <div className="text-xl text-gray-700 font-bold my-2">
-            {response.model_decision}
+            Prediction: {response.prediction}
+            <br />
+            Probability: {parseFloat(response.proba.toFixed(4)) * 100}%
           </div>
           <div
-            className="bg-gray-800 text-white cursor-pointer px-2 py-1 my-2 rounded"
-            onClick={() => setShowGlobal(false)}
+            className="bg-green-700 text-white cursor-pointer px-2 py-1 my-2 rounded"
+            onClick={() => setShow("local")}
           >
             Show local importances
-          </div>import RegularInput from './../components/RegularInput';
-import RegularSelect from './../components/RegularSelect';
+          </div>
+          <div
+              className="bg-green-700 text-white cursor-pointer px-2 py-1 my-2 rounded"
+              onClick={() => setShow("graph")}
+            >
+              Show graphs
+            </div>
 
           <div
-            className="text-red-400 hover:underline cursor-pointer"
+            className="mt-5 text-red-400 hover:underline cursor-pointer"
             onClick={() => setClosePop(true)}
           >
             Exit
