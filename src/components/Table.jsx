@@ -1,11 +1,16 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { mappings } from '../constants';
 
 
 export default function Table({ columns, columnNames, rows, className, linksTo }) {
   const navigate = useNavigate();
 
-  console.log('Rows: ', rows);
+  useEffect(()=>{
+    rows.forEach((row)=>{
+      delete row['_id']
+    })
+  },[rows])
 
   return (
     <table className={`table-auto w-full text-xs ${className}`}>
@@ -46,7 +51,7 @@ export default function Table({ columns, columnNames, rows, className, linksTo }
               <tr onClick={() => { navigate(linksTo, { state: { user: row } }) }} className={`hover:bg-gray-200 ${index % 2 != 0 ? 'bg-gray-100' : ''} cursor-pointer flex-col`}>
                 {
                   Object.values(row)?.map((value) => (
-                    <td className='border border-gray-300 border-2 border-x-0 px-4 py-2 text-left'>{value}</td>
+                    <td className='border border-gray-300 border-2 border-x-0 px-4 py-2 text-left'>{mappings[value] || value}</td>
                   ))
                 }
               </tr>

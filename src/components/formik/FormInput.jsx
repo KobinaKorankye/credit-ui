@@ -17,7 +17,7 @@ export default function FormInput({
 
   return (
     <div className={`mt-3 ${boxClassName}`}>
-      <label className={`block text-sm mb-2 text-gray-800`} for={name}>
+      <label className={`block text-xs mb-2 font-semibold text-gray-800`} for={name}>
         {label || name}
       </label>
       <div

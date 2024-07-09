@@ -16,7 +16,7 @@ export default function RegularInput({
 }) {
   return (
     <div className={`mt-3 ${boxClassName}`}>
-      <label className={`block text-sm mb-2 text-gray-800`} for={name}>
+      <label className={`block text-xs font-semibold mb-2 text-gray-800`} for={name}>
         {label || name}
       </label>
       <div

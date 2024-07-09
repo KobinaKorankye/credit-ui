@@ -5,10 +5,10 @@ export default function Submit({ text, className }) {
   const { handleSubmit } = useFormikContext();
   return (
     <button
-      style={{ fontFamily: "Quicksand" }}
+      // style={{ fontFamily: "Quicksand" }}
       onClick={handleSubmit}
       type="submit"
-      className={`${className} bg-orange-300/50 mt-6 w-full text-md hover:bg-slate-900/80 rounded-lg text-gray-800 font-semibold py-3 px-4 border border-white hover:border-transparent`}
+      className={`${className}`}
     >
       {text}
     </button>
