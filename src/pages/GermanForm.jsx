@@ -17,6 +17,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchGraphData } from "../store/graphDataSlice";
 import SideNavLayout from "../layouts/SideNavLayout";
 import Loader from "../loader/Loader";
+import { personalStatusSexEncoder } from "../helpers";
+import dbClient from "../api/dbClient";
 
 export default function GermanForm() {
   const [show, setShow] = useState("graph");
@@ -244,6 +246,20 @@ export default function GermanForm() {
 
   const onSubmit = async (form, { resetForm }) => {
     setLoading(true);
+    const saveableData = personalStatusSexEncoder(form)
+    try {
+      const { data } = await dbClient.post("/users/gapplicants", saveableData);
+      toast.success("Saved", {
+        position: "top-left",
+      });
+      console.log(data);
+    } catch (error) {
+      toast.error("Failed to save", {
+        position: "top-left",
+      });
+      console.log(error);
+    }
+
     try {
       const { data } = await client.post("/predict", form);
       setFormEntry(form);
@@ -260,6 +276,7 @@ export default function GermanForm() {
       });
       console.log(error);
     }
+    
     setLoading(false);
   };
 
