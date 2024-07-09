@@ -6,11 +6,13 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import NavItem from "../components/NavItem";
+import { useNavigate } from "react-router-dom";
 
 const navs = [
   {
     text: "Dashboard",
     icon: faChartSimple,
+    path: '/'
   },
   // {
   //   text: "Applicants",
@@ -20,9 +22,11 @@ const navs = [
 
 export default function SideNavLayout({ children }) {
   const [selectedNav, setSelectedNav] = useState(navs[0].text);
+  const navigate = useNavigate()
 
   return (
-    <div className="grid grid-cols-5 h-screen w-full">
+    <div
+     className="grid grid-cols-5 h-screen w-full">
       <div className="flex flex-col items-end bg-gradient-to-b from-deepblue to-deeperblue">
         <div className="w-full font-bold text-xl text-center p-5 py-20 text-cyan-300">
           Transflow
@@ -30,7 +34,7 @@ export default function SideNavLayout({ children }) {
         <div className="flex-1 flex flex-col gap-5 cursor-pointer w-[70%] font-bold uppercase text-sm">
           {navs.map((nav) => (
             <NavItem
-              onClick={() => setSelectedNav(nav.text)}
+              onClick={() => {setSelectedNav(nav.text); navigate(nav.path)}}
               selectedNav={selectedNav}
               {...nav}
             />

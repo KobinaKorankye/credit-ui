@@ -54,7 +54,7 @@ export default function Dashboard() {
 
   if(status !== "succeeded"){
     return (
-      <div>Loading....</div>
+      <div className="font-bold text-3xl">Loading....</div>
     )
   }
 
@@ -108,7 +108,7 @@ export default function Dashboard() {
       </div>
       <div className="mt-5 col-span-2 shadow-lg bg-white h-[420px] overflow-scroll">
         <div className="flex flex-col pt-5 gap-5 bg-white rounded">
-          <div className="flex gap-5 items-center">
+          {/* <div className="flex gap-5 items-center">
             <div className="md:w-[50%]">
               <SearchBar
                 value={searchText}
@@ -116,7 +116,7 @@ export default function Dashboard() {
                 // placeholder={`Type to search by ${filter}`}
               />
             </div>
-          </div>
+          </div> */}
           {loading ? (
             <div className="my-5 px-20 text-sm">Loading... </div>
           ) : (

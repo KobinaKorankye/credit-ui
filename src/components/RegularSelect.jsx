@@ -17,7 +17,7 @@ export default function RegularSelect({
   return (
     <div className={`mt-3 ${boxClassName}`}>
       <label
-        className={`block text-gray-800 text-sm mb-2 ${labelClass}`}
+        className={`block text-gray-800 text-xs font-semibold mb-2 ${labelClass}`}
         htmlFor={name}
       >
         {label || name}

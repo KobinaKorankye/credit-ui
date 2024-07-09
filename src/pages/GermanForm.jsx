@@ -15,6 +15,8 @@ import NormalBarChart from "../components/NormalBarChart";
 import { mappings } from "../constants";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGraphData } from "../store/graphDataSlice";
+import SideNavLayout from "../layouts/SideNavLayout";
+import Loader from "../loader/Loader";
 
 export default function GermanForm() {
   const [show, setShow] = useState("graph");
@@ -23,7 +25,7 @@ export default function GermanForm() {
   const [response, setResponse] = useState({});
   const [formEntry, setFormEntry] = useState({});
 
-  const data = useSelector((state)=>state.graphData.data)
+  const data = useSelector((state) => state.graphData.data)
 
   const dispatch = useDispatch()
   const status = useSelector((state) => state.graphData.status);
@@ -34,62 +36,81 @@ export default function GermanForm() {
     }
   }, [dispatch]);
 
-  const validationSchema = Yup.object().shape({
-    person_id: Yup.string()
-      .matches(
-        /^[a-zA-Z0-9]{6}$/,
-        "Person ID must be exactly 6 alphanumeric characters"
-      )
-      .required()
-      .label("Person ID"),
-    status_of_existing_checking_account: Yup.string()
-      .required()
-      .label("Status of Existing Checking Account"),
-    duration: Yup.number().required().positive().integer().label("Duration"),
-    credit_history: Yup.string().required().label("Credit History"),
-    purpose: Yup.string().required().label("Purpose"),
-    credit_amount: Yup.number()
-      .required()
-      .positive()
-      .integer()
-      .label("Credit Amount"),
-    savings_account_bonds: Yup.string()
-      .required()
-      .label("Savings Account/Bonds"),
-    present_employment_since: Yup.string()
-      .required()
-      .label("Present Employment Since"),
-    installment_rate_in_percentage_of_disposable_income: Yup.number()
-      .min(0, "The installment rate must be a non-negative number.") // Ensures the number is not negative.
-      .max(1, "The installment rate must not exceed 1.") // Ensures the number does not exceed 1.
-      .required()
-      .label("Installment Rate in Percentage of Disposable Income"),
-    marital_status: Yup.string().required().label("Marital Status"),
-    sex: Yup.string().required().label("Sex"),
-    other_debtors_guarantors: Yup.string()
-      .required()
-      .label("Other Debtors/Guarantors"),
-    present_residence_since: Yup.number()
-      .required()
-      .positive()
-      .integer()
-      .label("Present Residence Since"),
-    property: Yup.string().required().label("Property"),
-    age: Yup.number().required().positive().integer().label("Age"),
-    other_installment_plans: Yup.string()
-      .required()
-      .label("Other Installment Plans"),
-    housing: Yup.string().required().label("Housing"),
-    number_of_existing_credits_at_this_bank: Yup.number()
-      .required()
-      .label("Number of Existing Credits at This Bank"),
-    job: Yup.string().required().label("Job"),
-    number_of_people_being_liable_to_provide_maintenance_for: Yup.number()
-      .required()
-      .label("Number of People Being Liable to Provide Maintenance For"),
-    telephone: Yup.string().required().label("Telephone"),
-    foreign_worker: Yup.string().required().label("Foreign Worker"),
-  });
+  const validationSchema = [
+    Yup.object().shape({
+      person_id: Yup.string()
+        .matches(/^[a-zA-Z0-9]{6}$/, "Person ID must be exactly 6 alphanumeric characters")
+        .required()
+        .label("Person ID"),
+      age: Yup.number().required().positive().integer().label("Age"),
+      sex: Yup.string().required().label("Sex"),
+      marital_status: Yup.string().required().label("Marital Status"),
+      telephone: Yup.string().required().label("Telephone"),
+      foreign_worker: Yup.string().required().label("Foreign Worker"),
+      present_residence_since: Yup.number()
+        .required()
+        .positive()
+        .integer()
+        .label("Present Residence Since"),
+    }),
+    Yup.object().shape({
+      status_of_existing_checking_account: Yup.string()
+        .required()
+        .label("Status of Existing Checking Account"),
+      savings_account_bonds: Yup.string()
+        .required()
+        .label("Savings Account/Bonds"),
+      property: Yup.string().required().label("Property"),
+      housing: Yup.string().required().label("Housing"),
+      job: Yup.string().required().label("Job"),
+      present_employment_since: Yup.string()
+        .required()
+        .label("Present Employment Since"),
+    }),
+    Yup.object().shape({
+      other_installment_plans: Yup.string()
+        .required()
+        .label("Other Installment Plans"),
+      number_of_existing_credits_at_this_bank: Yup.number()
+        .required()
+        .label("Number of Existing Credits at This Bank"),
+      number_of_people_being_liable_to_provide_maintenance_for: Yup.number()
+        .required()
+        .label("Number of People Being Liable to Provide Maintenance For"),
+      credit_history: Yup.string().required().label("Credit History"),
+    }),
+    Yup.object().shape({
+      credit_amount: Yup.number()
+        .required()
+        .positive()
+        .integer()
+        .label("Credit Amount"),
+      duration: Yup.number().required().positive().integer().label("Duration"),
+      purpose: Yup.string().required().label("Purpose"),
+      other_debtors_guarantors: Yup.string()
+        .required()
+        .label("Other Debtors/Guarantors"),
+      installment_rate_in_percentage_of_disposable_income: Yup.number()
+        .min(0, "The installment rate must be a non-negative number.")
+        .max(1, "The installment rate must not exceed 1.")
+        .required()
+        .label("Installment Rate in Percentage of Disposable Income"),
+    }),
+  ];
+
+  const [step, setStep] = useState(0);
+
+  const handleNext = (errors, validateForm) => {
+    validateForm().then((formErrors) => {
+      if (Object.keys(formErrors).length === 0) {
+        setStep(step + 1);
+      }
+    });
+  };
+
+  const handlePrevious = () => {
+    setStep(step - 1);
+  };
 
   const initialValues = {
     person_id: "",
@@ -413,123 +434,167 @@ export default function GermanForm() {
           </div>
         </div>
       )}
-      <div className="bg-white w-full h-screen overflow-y-scroll px-20 lg:px-[200px] xl:px-[300px]">
-        <div className="text-4xl font-bold my-5 text-slate-900">
-          Loan Application Form
-        </div>
-        <Formik
-          initialValues={initialValues}
-          validationSchema={validationSchema}
-          onSubmit={onSubmit}
-        >
-          <>
-            <div className="w-full grid md:grid-cols-2 gap-4">
-              <FormInput label="User ID" name="person_id" type="text" />
-              <FormInput label="Age" name="age" type="number" />
-              <FormSelect
-                label="Marital Status"
-                name="marital_status"
-                options={attributeMapping.marital_status}
-              />
-              <FormSelect
-                label="Sex"
-                name="sex"
-                options={attributeMapping.sex}
-              />
-              <FormSelect
-                label="Other Debtors/Guarantors"
-                name="other_debtors_guarantors"
-                options={attributeMapping.other_debtors_guarantors}
-              />
-              <FormSelect
-                label="Telephone"
-                name="telephone"
-                options={attributeMapping.telephone}
-              />
-              <FormSelect
-                label="Foreign Worker"
-                name="foreign_worker"
-                options={attributeMapping.foreign_worker}
-              />
-              <FormSelect
-                label="Status of Existing Checking Account"
-                name="status_of_existing_checking_account"
-                options={attributeMapping.status_of_existing_checking_account}
-              />
-              <FormSelect
-                label="Savings Account/Bonds"
-                name="savings_account_bonds"
-                options={attributeMapping.savings_account_bonds}
-              />
-              <FormSelect
-                label="Present Employment Since"
-                name="present_employment_since"
-                options={attributeMapping.present_employment_since}
-              />
-              <FormSelect
-                label="Credit History"
-                name="credit_history"
-                options={attributeMapping.credit_history}
-              />
-              <FormInput
-                label="Present Residence Since"
-                name="present_residence_since"
-                type="number"
-              />
-              <FormSelect
-                label="Property"
-                name="property"
-                options={attributeMapping.property}
-              />
-              <FormSelect
-                label="Other Installment Plans"
-                name="other_installment_plans"
-                options={attributeMapping.other_installment_plans}
-              />
-              <FormSelect
-                label="Housing"
-                name="housing"
-                options={attributeMapping.housing}
-              />
-              <FormInput
-                label="Number of Existing Credits at This Bank"
-                name="number_of_existing_credits_at_this_bank"
-                type="number"
-              />
-              <FormSelect
-                label="Job"
-                name="job"
-                options={attributeMapping.job}
-              />
-              <FormInput
-                label="Number of People Being Liable to Provide Maintenance For"
-                name="number_of_people_being_liable_to_provide_maintenance_for"
-                type="number"
-              />
-              <FormInput
-                label="Credit Amount"
-                name="credit_amount"
-                type="number"
-              />
-              <FormInput label="Duration" name="duration" type="number" />
-              <FormSelect
-                label="Purpose"
-                name="purpose"
-                options={attributeMapping.purpose}
-              />
-              <FormInput
-                label="Installment Rate in Percentage of Disposable Income"
-                name="installment_rate_in_percentage_of_disposable_income"
-                type="number"
-              />
+      <SideNavLayout>
+        {
+          loading ?
+            <div className="bg-white flex flex-col items-center justify-center w-full h-full overflow-scroll">
+              <Loader height={200} width={200} />
+              <div className="font-semibold">Analyzing...</div>
             </div>
-            <Submit
-              className={"bg-slate-900 text-slate-100 my-20 rounded-none py-2"}
-              text={loading ? "LOADING.." : "Submit"}
-            />
-          </>
-        </Formik>
-      </div>
+            :
+            <div className="bg-white flex flex-col items-start w-full pt-10 h-full overflow-y-scroll px-20">
+              <div
+                className="text-xl py-2 font-semibold my-5 text-amber-600">
+                German Loan Form
+              </div>
+              <Formik
+                initialValues={formEntry || initialValues}
+                validationSchema={validationSchema[step]}
+                onSubmit={onSubmit}
+              >
+                {({ errors, validateForm, handleSubmit }) => (
+                  <>
+                    {step === 0 && (
+                      <div className="w-full grid md:grid-cols-2 gap-4">
+                        <FormInput label="Person ID" name="person_id" type="text" />
+                        <FormInput label="Age" name="age" type="number" />
+                        <FormSelect
+                          label="Sex"
+                          name="sex"
+                          options={attributeMapping.sex}
+                        />
+                        <FormSelect
+                          label="Marital Status"
+                          name="marital_status"
+                          options={attributeMapping.marital_status}
+                        />
+                        <FormSelect
+                          label="Telephone"
+                          name="telephone"
+                          options={attributeMapping.telephone}
+                        />
+                        <FormSelect
+                          label="Foreign Worker"
+                          name="foreign_worker"
+                          options={attributeMapping.foreign_worker}
+                        />
+                        <FormInput
+                          label="Present Residence Since"
+                          name="present_residence_since"
+                          type="number"
+                        />
+                      </div>
+                    )}
+                    {step === 1 && (
+                      <div className="w-full grid md:grid-cols-2 gap-4">
+                        <FormSelect
+                          label="Status of Existing Checking Account"
+                          name="status_of_existing_checking_account"
+                          options={attributeMapping.status_of_existing_checking_account}
+                        />
+                        <FormSelect
+                          label="Savings Account/Bonds"
+                          name="savings_account_bonds"
+                          options={attributeMapping.savings_account_bonds}
+                        />
+                        <FormSelect
+                          label="Property"
+                          name="property"
+                          options={attributeMapping.property}
+                        />
+                        <FormSelect
+                          label="Housing"
+                          name="housing"
+                          options={attributeMapping.housing}
+                        />
+                        <FormSelect
+                          label="Job"
+                          name="job"
+                          options={attributeMapping.job}
+                        />
+                        <FormSelect
+                          label="Present Employment Since"
+                          name="present_employment_since"
+                          options={attributeMapping.present_employment_since}
+                        />
+                      </div>
+                    )}
+                    {step === 2 && (
+                      <div className="w-full grid md:grid-cols-2 gap-4">
+                        <FormSelect
+                          label="Other Installment Plans"
+                          name="other_installment_plans"
+                          options={attributeMapping.other_installment_plans}
+                        />
+                        <FormInput
+                          label="Number of Existing Credits at This Bank"
+                          name="number_of_existing_credits_at_this_bank"
+                          type="number"
+                        />
+                        <FormInput
+                          label="Number of People Being Liable to Provide Maintenance For"
+                          name="number_of_people_being_liable_to_provide_maintenance_for"
+                          type="number"
+                        />
+                        <FormSelect
+                          label="Credit History"
+                          name="credit_history"
+                          options={attributeMapping.credit_history}
+                        />
+                      </div>
+                    )}
+                    {step === 3 && (
+                      <div className="w-full grid md:grid-cols-2 gap-4">
+                        <FormInput label="Credit Amount" name="credit_amount" type="number" />
+                        <FormInput label="Duration" name="duration" type="number" />
+                        <FormSelect
+                          label="Purpose"
+                          name="purpose"
+                          options={attributeMapping.purpose}
+                        />
+                        <FormSelect
+                          label="Other Debtors/Guarantors"
+                          name="other_debtors_guarantors"
+                          options={attributeMapping.other_debtors_guarantors}
+                        />
+                        <FormInput
+                          label="Installment Rate in Percentage of Disposable Income"
+                          name="installment_rate_in_percentage_of_disposable_income"
+                          type="number"
+                        />
+                      </div>
+                    )}
+                    <div className="flex justify-between mt-20 gap-4 text-sm">
+                      {step > 0 && (
+                        <button
+                          type="button"
+                          className="bg-zinc-100 text-zinc-600 py-4 text-sm hover:bg-zinc-600 hover:text-white px-4 rounded"
+                          onClick={handlePrevious}
+                        >
+                          Previous
+                        </button>
+                      )}
+                      {step < validationSchema.length - 1 && (
+                        <button
+                          type="button"
+                          className="bg-blue-100 w-64 py-4 text-sm px-4 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold rounded"
+                          onClick={() => handleNext(errors, validateForm)}
+                        >
+                          Next
+                        </button>
+                      )}
+                      {step === validationSchema.length - 1 && (
+                        <Submit
+                          className={"bg-amber-100 w-64 py-4 text-sm px-4 text-amber-600 hover:bg-amber-600 hover:text-white font-semibold rounded"}
+                          text="Submit"
+                        />
+                      )}
+                    </div>
+                  </>
+                )}
+              </Formik>
+            </div>}
+      </SideNavLayout>
     </>
   );
 }
