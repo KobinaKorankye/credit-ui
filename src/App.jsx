@@ -9,6 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import store from './store/store';
 import { fetchGraphData } from "./store/graphDataSlice";
+import Applicants from "./pages/Applicants";
+import Analysis from "./pages/Analysis";
 
 function App() {
 
@@ -17,13 +19,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          {/* <Route
-          path="forms/"
-          element={user && !isAdmin ? <MainApp /> : <Navigate to={"/"} />}
-        >
-          <Route index path="" element={<Analytics />} />
-          <Route path="layers" element={<Layers />} />
-        </Route> */}
+          <Route path="/applicants" element={<Applicants />} />
+          <Route path="/analysis" element={<Analysis />} />
           <Route path="/forms" element={<Landing />} />
           <Route path="/german" element={<GermanForm />} />
           <Route path="/adehyeman" element={<AdehyemanForm />} />

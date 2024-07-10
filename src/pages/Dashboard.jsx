@@ -34,9 +34,9 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const { data } = await dbClient.get("/users");
-      toast.success("Loaded Successfully", {
-        position: "top-left",
-      });
+      // toast.success("Loaded Successfully", {
+      //   position: "top-left",
+      // });
       setUsers(data);
       console.log(data);
     } catch (error) {

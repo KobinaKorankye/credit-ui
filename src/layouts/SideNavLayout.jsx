@@ -2,17 +2,23 @@ import {
   faChartSimple,
   faDashboard,
   faUser,
+  faUsersRays,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import NavItem from "../components/NavItem";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const navs = [
   {
     text: "Dashboard",
     icon: faChartSimple,
     path: '/'
+  },
+  {
+    text: "Applicants",
+    icon: faUsersRays,
+    path: '/applicants'
   },
   // {
   //   text: "Applicants",
@@ -21,8 +27,8 @@ const navs = [
 ];
 
 export default function SideNavLayout({ children }) {
-  const [selectedNav, setSelectedNav] = useState(navs[0].text);
   const navigate = useNavigate()
+  const {pathname} = useLocation()
 
   return (
     <div
@@ -34,8 +40,8 @@ export default function SideNavLayout({ children }) {
         <div className="flex-1 flex flex-col gap-5 cursor-pointer w-[70%] font-bold uppercase text-sm">
           {navs.map((nav) => (
             <NavItem
-              onClick={() => {setSelectedNav(nav.text); navigate(nav.path)}}
-              selectedNav={selectedNav}
+              onClick={() => {navigate(nav.path)}}
+              selectedNav={pathname}
               {...nav}
             />
           ))}

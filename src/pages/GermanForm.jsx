@@ -12,12 +12,12 @@ import BarChart from "../components/BarChart";
 import KDEChart from "../components/KDEChart";
 // import data from "../data/data.json";
 import NormalBarChart from "../components/NormalBarChart";
-import { mappings } from "../constants";
+import { attributeMapping, catColumns, mappings, numericColumns } from "../constants";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGraphData } from "../store/graphDataSlice";
 import SideNavLayout from "../layouts/SideNavLayout";
 import Loader from "../loader/Loader";
-import { personalStatusSexEncoder } from "../helpers";
+import { getPredClass, personalStatusSexEncoder } from "../helpers";
 import dbClient from "../api/dbClient";
 
 export default function GermanForm() {
@@ -139,110 +139,7 @@ export default function GermanForm() {
     foreign_worker: "",
   };
 
-  const attributeMapping = {
-    status_of_existing_checking_account: [
-      { value: "A11", label: "Less than 0 GHS" },
-      { value: "A12", label: "Between 0 and 200 GHS" },
-      { value: "A13", label: "200 or more GHS" },
-      { value: "A14", label: "No account" },
-    ],
-    credit_history: [
-      { value: "A30", label: "No credits all paid" },
-      { value: "A31", label: "All credits paid here" },
-      { value: "A32", label: "Credits paid till now" },
-      { value: "A33", label: "Delay in past" },
-      { value: "A34", label: "Critical other credits" },
-    ],
-    purpose: [
-      { value: "A40", label: "Car new" },
-      { value: "A41", label: "Car used" },
-      { value: "A42", label: "Furniture/equipment" },
-      { value: "A43", label: "Radio/TV" },
-      { value: "A44", label: "Domestic appliances" },
-      { value: "A45", label: "Repairs" },
-      { value: "A46", label: "Education" },
-      { value: "A47", label: "Vacation" },
-      { value: "A48", label: "Retraining" },
-      { value: "A49", label: "Business" },
-      { value: "A410", label: "Others" },
-    ],
-    savings_account_bonds: [
-      { value: "A61", label: "Less than 100 GHS" },
-      { value: "A62", label: "Between 100 and 500 GHS" },
-      { value: "A63", label: "Between 500 and 1000 GHS" },
-      { value: "A64", label: "1000 or more GHS" },
-      { value: "A65", label: "Unknown/no savings" },
-    ],
-    present_employment_since: [
-      { value: "A71", label: "Unemployed" },
-      { value: "A72", label: "Less than 1 year" },
-      { value: "A73", label: "Between 1 and 4 years" },
-      { value: "A74", label: "Between 4 and 7 years" },
-      { value: "A75", label: "7 or more years" },
-    ],
-    marital_status: [
-      { value: "divorced", label: "divorced" },
-      { value: "separated", label: "separated" },
-      { value: "single", label: "single" },
-      { value: "married", label: "married" },
-      { value: "widowed", label: "widowed" },
-    ],
-    sex: [
-      { value: "male", label: "male" },
-      { value: "female", label: "female" },
-    ],
-    other_debtors_guarantors: [
-      { value: "A101", label: "None" },
-      { value: "A102", label: "Co-applicant" },
-      { value: "A103", label: "Guarantor" },
-    ],
-    property: [
-      { value: "A121", label: "Real estate" },
-      { value: "A122", label: "Building/savings life insurance" },
-      { value: "A123", label: "Car/other" },
-      { value: "A124", label: "Unknown/no property" },
-    ],
-    other_installment_plans: [
-      { value: "A141", label: "Bank" },
-      { value: "A142", label: "Stores" },
-      { value: "A143", label: "None" },
-    ],
-    housing: [
-      { value: "A151", label: "Rent" },
-      { value: "A152", label: "Own" },
-      { value: "A153", label: "For free" },
-    ],
-    job: [
-      { value: "A171", label: "Unemployed/unskilled non-resident" },
-      { value: "A172", label: "Unskilled resident" },
-      { value: "A173", label: "Skilled employee/official" },
-      { value: "A174", label: "Management/self-employed/high qualified" },
-    ],
-    telephone: [
-      { value: "A191", label: "None" },
-      { value: "A192", label: "Yes, registered" },
-    ],
-    foreign_worker: [
-      { value: "A201", label: "Yes" },
-      { value: "A202", label: "No" },
-    ],
-  };
 
-  const catColumns = [
-    "status_of_existing_checking_account",
-    "credit_history",
-    "purpose",
-    "savings_account_bonds",
-    "present_employment_since",
-    "personal_status_and_sex",
-    "other_debtors_guarantors",
-    "property",
-    "other_installment_plans",
-    "housing",
-    "job",
-    "telephone",
-    "foreign_worker",
-  ];
 
   const onSubmit = async (form, { resetForm }) => {
     setLoading(true);
@@ -280,27 +177,12 @@ export default function GermanForm() {
     setLoading(false);
   };
 
-  const numericColumns = [
-    "duration",
-    "credit_amount",
-    "installment_rate_in_percentage_of_disposable_income",
-    "present_residence_since",
-    "age",
-    "number_of_existing_credits_at_this_bank",
-  ];
 
   const [numColumn, setNumColumn] = useState("credit_amount");
   const [catColumn, setCatColumn] = useState(
     "status_of_existing_checking_account"
   );
 
-  const getPredClass = () => {
-    if (response?.prediction == "Possible Non Defaulter") {
-      return 1;
-    } else if (response?.prediction == "Possible Defaulter") {
-      return 0;
-    }
-  };
 
   return (
     <>
@@ -323,7 +205,7 @@ export default function GermanForm() {
                 title={numColumn}
                 highlightPoint={formEntry[numColumn]}
                 columnArray={[...data[numColumn], formEntry[numColumn]]}
-                classArray={[...data["class"], getPredClass()]}
+                classArray={[...data["class"], getPredClass(response)]}
               />
             </div>
             <div className="flex flex-col">
@@ -344,7 +226,7 @@ export default function GermanForm() {
                   ...data[catColumn],
                   mappings[formEntry[catColumn]],
                 ]}
-                classArray={[...data["class"], getPredClass()]}
+                classArray={[...data["class"], getPredClass(response)]}
                 columnTitle={catColumn}
               />
             </div>
