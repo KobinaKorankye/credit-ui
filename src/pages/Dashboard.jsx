@@ -12,6 +12,9 @@ import Table from "../components/Table";
 import SearchBar from "../components/SearchBar";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGraphData } from "../store/graphDataSlice";
+import { transformModelApiObject } from "../helpers";
+import client from "../api/client";
+import { columnNames, columns } from "../constants";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -19,16 +22,36 @@ export default function Dashboard() {
   const [searchText, setSearchText] = useState("");
   const [users, setUsers] = useState([]);
 
-  const data = useSelector((state)=>state.graphData.data)
+  const data = useSelector((state) => state.graphData.data);
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const status = useSelector((state) => state.graphData.status);
 
   useEffect(() => {
-    if (status === 'idle') {
+    if (status === "idle") {
       dispatch(fetchGraphData());
     }
   }, [dispatch]);
+
+  const getPrediction = async (row) => {
+    const body = transformModelApiObject(row);
+    setLoading(true);
+    try {
+      const { data } = await client.post("/predict", body);
+      console.log(body);
+      //   toast.success("Sent Successfully", {
+      //     position: "top-left",
+      //   });
+      navigate("/analysis", { state: { formEntry: body, response: data[0] } });
+      console.log(data);
+    } catch (error) {
+      toast.error("Failed", {
+        position: "top-left",
+      });
+      console.log(error);
+    }
+    setLoading(false);
+  };
 
   const getUsers = async () => {
     setLoading(true);
@@ -52,10 +75,8 @@ export default function Dashboard() {
     getUsers();
   }, []);
 
-  if(status !== "succeeded"){
-    return (
-      <div className="font-bold text-3xl">Loading....</div>
-    )
+  if (status !== "succeeded") {
+    return <div className="font-bold text-3xl">Loading....</div>;
   }
 
   return (
@@ -83,7 +104,6 @@ export default function Dashboard() {
               }
               text={"Adehyeman"}
               onClick={() => navigate("/adehyeman")}
-
             />
           </div>
         </div>
@@ -121,21 +141,9 @@ export default function Dashboard() {
             <div className="my-5 px-20 text-sm">Loading... </div>
           ) : (
             <Table
-              //   linksTo={"user-info"}
-              //   columns={[
-              //     "_id",
-              //     "first_name",
-              //     "last_name",
-              //     "email",
-              //     "organization",
-              //     "purpose_of_use",
-              //     " ",
-              //   ]}
-              //   rows={users.filter(
-              //     (user) =>
-              //       user[filter].toLowerCase().search(searchText.toLowerCase()) !=
-              //         -1
-              //   )}
+              onRowClick={getPrediction}
+              columnNames={["id", ...columnNames, "Class"]}
+              columns={["_id", ...columns, "class"]}
               rows={users}
             />
           )}

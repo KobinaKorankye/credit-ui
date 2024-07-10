@@ -8,6 +8,7 @@ import { catColumns, mappings, numericColumns } from "../constants";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGraphData } from "../store/graphDataSlice";
 import { useLocation, useNavigate } from "react-router-dom";
+import { getPredClass } from "../helpers";
 
 
 export default function Analysis() {
@@ -52,7 +53,7 @@ export default function Analysis() {
                 title={numColumn}
                 highlightPoint={formEntry[numColumn]}
                 columnArray={[...data[numColumn], formEntry[numColumn]]}
-                classArray={[...data["class"]]}
+                classArray={[...data["class"], getPredClass(response)]}
               />
             </div>
             <div className="flex flex-col">
@@ -73,7 +74,7 @@ export default function Analysis() {
                   ...data[catColumn],
                   mappings[formEntry[catColumn]],
                 ]}
-                classArray={[...data["class"]]}
+                classArray={[...data["class"], getPredClass(response)]}
                 columnTitle={catColumn}
               />
             </div>
