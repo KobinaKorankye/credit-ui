@@ -1,6 +1,10 @@
 import Chart from "react-apexcharts";
 import React, { useEffect, useState } from "react";
 import * as ss from "simple-statistics";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faInfo } from "@fortawesome/free-solid-svg-icons";
+import { faInfoCircle } from "@fortawesome/free-solid-svg-icons/faInfoCircle";
+import { Tooltip } from "react-tooltip";
 
 export default function KDEChart({
   columnArray,
@@ -10,6 +14,8 @@ export default function KDEChart({
   hideToolbar,
   title,
   showGrid,
+  showInfo,
+  columnName,
   yLabel,
 }) {
   const [defaultingData, setDefaultingData] = useState({});
@@ -34,7 +40,7 @@ export default function KDEChart({
           }
         }
       });
-      
+
       let defaultingData = [];
       let notDefaultingData = [];
       for (let key in defaulting) {
@@ -84,7 +90,7 @@ export default function KDEChart({
       });
     }
 
-    
+
   }, [columnArray, classArray]);
 
   const options = {
@@ -96,10 +102,10 @@ export default function KDEChart({
       },
     },
     title: {
-      text: title, // Set the title for the chart
-      align: "left", // Align the title (options: 'left', 'center', 'right')
+      text: "Probability Density Plot of " + title, // Set the title for the chart
+      align: "center", // Align the title (options: 'left', 'center', 'right')
       style: {
-        fontSize: "12px",
+        fontSize: "15px",
         fontWeight: "bold",
         color: "#263238",
       },
@@ -109,8 +115,24 @@ export default function KDEChart({
     },
     xaxis: {
       type: "numeric",
+      title: {
+        text: columnName, // Label for x-axis
+        style: {
+          fontSize: "12px",
+          fontWeight: "bold",
+          color: "#263238",
+        },
+      },
     },
     yaxis: {
+      title: {
+        text: "Probability Density", // Label for y-axis
+        style: {
+          fontSize: "12px",
+          fontWeight: "bold",
+          color: "#263238",
+        },
+      },
       labels: {
         show: false, // Hides the y-axis labels
       },
@@ -135,10 +157,12 @@ export default function KDEChart({
           label: {
             borderColor: "#070707",
             style: {
-              color: "#fff",
-              background: "#000",
+              color: "#000",
+              background: "#faf",
+              fontSize: '18px',
+              fontWeight: 'bold'
             },
-            text: "Applicant: " + highlightPoint,
+            text: "Applicant - " + highlightPoint,
           },
         },
       ],
@@ -150,7 +174,18 @@ export default function KDEChart({
   };
 
   return (
-    <div id="chart">
+    <div className="relative" id="chart">
+      {
+        showInfo &&
+        <>
+          <div className="absolute text-blue-800 -top-5 left-2 cursor-pointer" data-tooltip-id='desc'>
+            <FontAwesomeIcon size="xl" icon={faInfoCircle} />
+          </div>
+          <Tooltip style={{ width: '400px' }} id="desc" place="bottom">
+            This density plot displays the probabilty distribution of <span className="font-bold text-green-500">{title.toLowerCase()}</span>  values for past approved loan customers. <br /> It compares defaulting and non-defaulting customers on the same plot`
+          </Tooltip>
+        </>
+      }
       <Chart
         options={options}
         series={[notDefaultingData, defaultingData]}

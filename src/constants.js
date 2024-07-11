@@ -80,6 +80,30 @@ export const columns = [
   "foreign_worker",
 ];
 
+export const COLUMN_LABELS = {
+  "status_of_existing_checking_account": "Checking Account Status",
+  "duration": "Loan Duration (months)",
+  "credit_history": "Credit History",
+  "purpose": "Loan Purpose",
+  "credit_amount": "Credit Amount",
+  "savings_account_bonds": "Savings Account/Bonds",
+  "present_employment_since": "Employment Duration",
+  "installment_rate_in_percentage_of_disposable_income": "Installment Rate (% of Income)",
+  "personal_status_and_sex": "Personal Status & Gender",
+  "other_debtors_guarantors": "Other Debtors/Guarantors",
+  "present_residence_since": "Years at Current Residence",
+  "property": "Property Ownership",
+  "age": "Age",
+  "other_installment_plans": "Other Installment Plans",
+  "housing": "Housing Situation",
+  "number_of_existing_credits_at_this_bank": "Number of Existing Credits",
+  "job": "Job Type",
+  "number_of_people_being_liable_to_provide_maintenance_for": "Dependents",
+  "telephone": "Telephone Availability",
+  "foreign_worker": "Foreign Worker Status"
+}
+
+
 export const columnNames = [
   "Status Of Existing Checking Account",
   "Duration",

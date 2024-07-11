@@ -86,8 +86,10 @@ export default function NormalBarChart({
           label: {
             borderColor: "#070707",
             style: {
-              color: "#fff",
-              background: "#000",
+              color: "#000",
+              background: "#faf",
+              fontSize: '18px',
+              fontWeight: 'bold'
             },
             text: "Applicant: "+highlightPoint,
           },
