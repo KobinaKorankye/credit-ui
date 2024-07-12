@@ -84,7 +84,7 @@ export default function HistogramChart({
       },
     },
     title: {
-      text: "Histogram Plot of "+ title,
+      text: "Histogram Distribution by "+ title,
       align: "center",
       style: {
         fontSize: "15px",

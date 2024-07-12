@@ -57,8 +57,8 @@ export default function Analysis() {
           <div className="w-full gap-5">
             {showNumGraph ? (
               <div className="flex flex-col">
-                <div className="text-xl text-gray-900 font-bold my-2">
-                  Population Distributions for Numeric Features
+                <div className="text-2xl text-gray-900 font-bold my-2">
+                  Loan Assessment Data Analytics
                 </div>
                 <div className="flex gap-5">
                   <RegularSelect
@@ -131,8 +131,8 @@ export default function Analysis() {
               </div>
             ) : (
               <div className="flex flex-col">
-                <div className="text-xl text-gray-900 font-bold my-2">
-                  Population Counts for Categorical Features
+                <div className="text-2xl text-gray-900 font-bold my-2">
+                Loan Assessment Data Analytics
                 </div>
                 <div className="flex gap-5">
                   <RegularSelect
