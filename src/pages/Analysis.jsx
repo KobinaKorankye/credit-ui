@@ -83,7 +83,7 @@ export default function Analysis() {
                       onClick={() => setShowNumGraph(false)}
                       className={`flex-1 cursor-pointer ${
                         !showNumGraph
-                          ? "bg-amber-600 text-white"
+                          ? "bg-teal-600 text-white"
                           : "bg-slate-200 text-black"
                       } h-10 flex items-center justify-center rounded-r-lg`}
                     >
@@ -156,7 +156,7 @@ export default function Analysis() {
                       onClick={() => setShowNumGraph(false)}
                       className={`flex-1 cursor-pointer ${
                         !showNumGraph
-                          ? "bg-amber-600 text-white"
+                          ? "bg-teal-600 text-white"
                           : "bg-slate-200 text-black"
                       } h-10 flex items-center justify-center rounded-r-lg`}
                     >
