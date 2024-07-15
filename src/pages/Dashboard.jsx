@@ -15,6 +15,7 @@ import { fetchGraphData } from "../store/graphDataSlice";
 import { transformModelApiObject } from "../helpers";
 import client from "../api/client";
 import { columnNames, columns } from "../constants";
+import MUIDataTable from "../components/MUITable";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -35,6 +36,26 @@ export default function Dashboard() {
 
   const getPrediction = async (row) => {
     const body = transformModelApiObject(row);
+    setLoading(true);
+    try {
+      const { data } = await client.post("/predict", body);
+      console.log(body);
+      //   toast.success("Sent Successfully", {
+      //     position: "top-left",
+      //   });
+      navigate("/analysis", { state: { formEntry: body, response: data[0] } });
+      console.log(data);
+    } catch (error) {
+      toast.error("Failed", {
+        position: "top-left",
+      });
+      console.log(error);
+    }
+    setLoading(false);
+  };
+
+  const getPredictionMUI = async (params, event, details) => {
+    const body = transformModelApiObject(params.row);
     setLoading(true);
     try {
       const { data } = await client.post("/predict", body);
@@ -126,8 +147,8 @@ export default function Dashboard() {
           />
         </div>
       </div>
-      <div className="mt-5 col-span-2 shadow-lg bg-white h-[420px] overflow-scroll">
-        <div className="flex flex-col pt-5 gap-5 bg-white rounded">
+      <div className="mt-5 col-span-2">
+        <div className="flex flex-col bg-white">
           {/* <div className="flex gap-5 items-center">
             <div className="md:w-[50%]">
               <SearchBar
@@ -140,12 +161,15 @@ export default function Dashboard() {
           {loading ? (
             <div className="my-5 px-20 text-sm">Loading... </div>
           ) : (
-            <Table
-              onRowClick={getPrediction}
-              columnNames={["id", ...columnNames, "Class"]}
-              columns={["_id", ...columns, "class"]}
-              rows={users}
-            />
+            // <Table
+            //   onRowClick={getPrediction}
+            //   columnNames={["id", ...columnNames, "Class"]}
+            //   columns={["_id", ...columns, "class"]}
+            //   rows={users}
+            // />
+            <div className="h-[423px]">
+              <MUIDataTable onRowClick={getPredictionMUI} rows={users} />
+            </div>
           )}
         </div>
       </div>

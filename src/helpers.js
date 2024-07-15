@@ -72,3 +72,44 @@ export function transformModelApiObject(input) {
   
     return result;
   }
+
+  const firstNames = [
+    "James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth",
+    "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen",
+    // Add more first names as needed
+  ];
+  
+  const lastNames = [
+    "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez",
+    "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin",
+    // Add more last names as needed
+  ];
+  
+  const middleInitials = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(letter => `${letter}.`);
+  
+  export function generateName(id) {
+    const firstName = firstNames[id % firstNames.length];
+    const middleInitial = middleInitials[Math.floor(id / firstNames.length) % middleInitials.length];
+    const lastName = lastNames[Math.floor(id / (firstNames.length * middleInitials.length)) % lastNames.length];
+    return `${firstName} ${middleInitial} ${lastName}`;
+  }
+
+  export   const getPredictionMUI = async (params, event, details) => {
+    const body = transformModelApiObject(params.row);
+    setLoading(true);
+    try {
+      const { data } = await client.post("/predict", body);
+      console.log(body);
+      //   toast.success("Sent Successfully", {
+      //     position: "top-left",
+      //   });
+      navigate("/analysis", { state: { formEntry: body, response: data[0] } });
+      console.log(data);
+    } catch (error) {
+      toast.error("Failed", {
+        position: "top-left",
+      });
+      console.log(error);
+    }
+    setLoading(false);
+  };
