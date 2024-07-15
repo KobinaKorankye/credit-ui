@@ -65,6 +65,7 @@ export default function Analysis() {
                     label={"Select numerical feature to plot"}
                     value={numColumn}
                     options={numericColumns}
+                    labelsMap={COLUMN_LABELS}
                     onChange={(e) => setNumColumn(e.target.value)}
                   />
 
@@ -132,10 +133,11 @@ export default function Analysis() {
             ) : (
               <div className="flex flex-col">
                 <div className="text-2xl text-gray-900 font-bold my-2">
-                Loan Assessment Data Analytics
+                  Loan Assessment Data Analytics
                 </div>
                 <div className="flex gap-5">
                   <RegularSelect
+                    labelsMap={COLUMN_LABELS}
                     label={"Select categorical feature to plot"}
                     value={catColumn}
                     options={catColumns}
@@ -164,15 +166,19 @@ export default function Analysis() {
                     </div>
                   </div>
                 </div>
-                <NormalBarChart
-                  highlightPoint={mappings[formEntry[catColumn]]}
-                  columnArray={[
-                    ...data[catColumn],
-                    mappings[formEntry[catColumn]],
-                  ]}
-                  classArray={[...data["class"], getPredClass(response)]}
-                  columnTitle={catColumn}
-                />
+                <div className="mt-16">
+                  <NormalBarChart
+                    showInfo
+                    title={COLUMN_LABELS[catColumn]}
+                    highlightPoint={mappings[formEntry[catColumn]]}
+                    columnArray={[
+                      ...data[catColumn],
+                      mappings[formEntry[catColumn]],
+                    ]}
+                    classArray={[...data["class"], getPredClass(response)]}
+                    columnTitle={catColumn}
+                  />
+                </div>
               </div>
             )}
           </div>

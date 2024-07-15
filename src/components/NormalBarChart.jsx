@@ -1,12 +1,17 @@
 import Chart from "react-apexcharts";
 import React, { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { Tooltip } from "react-tooltip";
 
 export default function NormalBarChart({
   columnArray,
   classArray,
   columnTitle,
+  title,
   yLabel,
-  highlightPoint
+  highlightPoint,
+  showInfo
 }) {
   const [defaultingData, setDefaultingData] = useState([]);
   const [notDefaultingData, setNotDefaultingData] = useState([]);
@@ -88,10 +93,10 @@ export default function NormalBarChart({
             style: {
               color: "#000",
               background: "#faf",
-              fontSize: '18px',
-              fontWeight: 'bold'
+              fontSize: "18px",
+              fontWeight: "bold",
             },
-            text: "Applicant: "+highlightPoint,
+            text: "Applicant: " + highlightPoint,
           },
         },
       ],
@@ -112,7 +117,25 @@ export default function NormalBarChart({
   ];
 
   return (
-    <div id="chart">
+    <div className="relative" id="chart">
+      {showInfo && (
+        <>
+          <div
+            className="absolute text-blue-800 -top-5 left-2 cursor-pointer"
+            data-tooltip-id="desc3"
+          >
+            <FontAwesomeIcon size="xl" icon={faInfoCircle} />
+          </div>
+          <Tooltip style={{ width: "400px" }} id="desc3" place="bottom">
+            This histogram displays the frequency distribution of{" "}
+            <span className="font-bold text-green-500">
+              {title.toLowerCase()}
+            </span>{" "}
+            values for past approved loan customers. <br /> It compares
+            defaulting and non-defaulting customers on the same plot.
+          </Tooltip>
+        </>
+      )}
       <Chart options={options} series={series} type="bar" height={500} />
     </div>
   );

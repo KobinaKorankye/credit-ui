@@ -1,6 +1,7 @@
 import React from 'react';
 import { useFormikContext } from 'formik';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { COLUMN_LABELS } from '../../constants';
 
 export default function FormSelect({
   boxClassName,
@@ -22,7 +23,7 @@ export default function FormSelect({
   return (
     <div className={`mt-3 ${boxClassName}`}>
       <label className={`block text-gray-800 text-xs font-semibold mb-2 ${labelClass}`} htmlFor={name}>
-        {label || name}
+        {label || COLUMN_LABELS[name]}
       </label>
       <div
         className="flex w-full items-center shadow appearance-none rounded border border-slate-300 py-2 px-3 h-[2.5rem] text-white 

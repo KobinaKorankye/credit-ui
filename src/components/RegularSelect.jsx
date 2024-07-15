@@ -13,6 +13,7 @@ export default function RegularSelect({
   onChange,
   onBlur,
   disabled,
+  labelsMap={}
 }) {
   return (
     <div className={`mt-3 ${boxClassName}`}>
@@ -47,7 +48,7 @@ export default function RegularSelect({
           </option>
           {options.map((option) => (
             <option key={option} value={option}>
-              {option}
+              {labelsMap[option] || option}
             </option>
           ))}
         </select>
