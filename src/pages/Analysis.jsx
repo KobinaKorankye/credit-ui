@@ -202,7 +202,7 @@ export default function Analysis() {
         {Object.keys(response).length != 0 &&
           selectedNav == "Feature Importances" && (
             <div className="bg-white w-full h-full flex md:p-10 md:px-32 flex-col items-center overflow-y-scroll">
-              <div className="text-xl text-gray-900 font-bold my-2">
+              <div className="text-2xl text-gray-900 font-bold my-2">
                 {globalFI
                   ? "Global Feature Importances"
                   : "Feature Influences on Prediction"}
