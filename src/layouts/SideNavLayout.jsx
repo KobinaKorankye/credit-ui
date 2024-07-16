@@ -54,7 +54,7 @@ export default function SideNavLayout({ children }) {
           onClick={toggle}
           className="w-full relative flex justify-center items-center font-bold text-xl gap-3 px-5 py-20 text-cyan-100"
         >
-          {!isCollapsed && <span>Transflow</span>}
+          {!isCollapsed && <span>Credit Analytics</span>}
           <FontAwesomeIcon size="lg" icon={faChartGantt} />
           <div className="absolute flex justify-end items-center w-full h-full">
             <div className="p-2 bg-white rounded-l-lg text-cyan-800">

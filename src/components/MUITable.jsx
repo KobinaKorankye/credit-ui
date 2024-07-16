@@ -16,13 +16,17 @@ const defaultColumns = [
   },
   {
     field: "credit_amount",
-    headerName: "Loan amount",
+    headerName: "Loan amount (GHS)",
     width: 230,
+    type: 'number',
+    valueGetter: (value, row) => `${row.credit_amount.toFixed(2)}`,
+
   },
   {
     field: "duration",
     headerName: "Loan duration (months)",
     width: 230,
+    type: 'number',
   },
   {
     field: "purpose",
@@ -68,6 +72,14 @@ export default function MUIDataTable({
         }}
         onRowClick={onRowClick}
         pageSizeOptions={[6, 10]}
+        sx={{
+          '& .MuiDataGrid-columnHeader': {
+            marginRight: '16px',
+          },
+          '& .MuiDataGrid-cell': {
+            marginRight: '16px',
+          },
+        }}
         // checkboxSelection
       />
   );

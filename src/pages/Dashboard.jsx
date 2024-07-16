@@ -63,7 +63,9 @@ export default function Dashboard() {
       //   toast.success("Sent Successfully", {
       //     position: "top-left",
       //   });
-      navigate("/analysis", { state: { formEntry: body, response: data[0], fullRow: params.row } });
+      navigate("/analysis", {
+        state: { formEntry: body, response: data[0], fullRow: params.row },
+      });
       console.log(data);
     } catch (error) {
       toast.error("Failed", {
@@ -92,7 +94,7 @@ export default function Dashboard() {
     setLoading(false);
   };
 
-  const classes = ['Defaulted', 'Repaid']
+  const classes = ["Defaulted", "Repaid"];
 
   const columns = [
     { field: "id", headerName: "ID", width: 100 },
@@ -106,13 +108,16 @@ export default function Dashboard() {
     },
     {
       field: "credit_amount",
-      headerName: "Loan amount",
+      headerName: "Loan amount (GHS)",
       width: 230,
+      type: "number",
+      valueGetter: (value, row) => `${row.credit_amount.toFixed(2)}`,
     },
     {
       field: "duration",
       headerName: "Loan duration (months)",
       width: 230,
+      type: "number",
     },
     {
       field: "purpose",
@@ -204,7 +209,11 @@ export default function Dashboard() {
             //   rows={users}
             // />
             <div className="h-[423px]">
-              <MUIDataTable columns={columns} onRowClick={getPredictionMUI} rows={users} />
+              <MUIDataTable
+                columns={columns}
+                onRowClick={getPredictionMUI}
+                rows={users}
+              />
             </div>
           )}
         </div>
