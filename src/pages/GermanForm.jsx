@@ -172,7 +172,7 @@ export default function GermanForm() {
       toast.success("Sent Successfully", {
         position: "top-left",
       });
-      navigate("/analysis", { state: { formEntry: form, response: data[0] } });
+      navigate("/analysis", { state: { formEntry: form, response: data[0], fullRow: {} } });
       console.log(data);
     } catch (error) {
       toast.error("Failed", {

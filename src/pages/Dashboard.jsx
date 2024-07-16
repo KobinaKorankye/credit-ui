@@ -12,9 +12,9 @@ import Table from "../components/Table";
 import SearchBar from "../components/SearchBar";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGraphData } from "../store/graphDataSlice";
-import { transformModelApiObject } from "../helpers";
+import { generateName, transformModelApiObject } from "../helpers";
 import client from "../api/client";
-import { columnNames, columns } from "../constants";
+import { columnNames, columns, mappings } from "../constants";
 import MUIDataTable from "../components/MUITable";
 
 export default function Dashboard() {
@@ -63,7 +63,7 @@ export default function Dashboard() {
       //   toast.success("Sent Successfully", {
       //     position: "top-left",
       //   });
-      navigate("/analysis", { state: { formEntry: body, response: data[0] } });
+      navigate("/analysis", { state: { formEntry: body, response: data[0], fullRow: params.row } });
       console.log(data);
     } catch (error) {
       toast.error("Failed", {
@@ -91,6 +91,42 @@ export default function Dashboard() {
     }
     setLoading(false);
   };
+
+  const classes = ['Defaulted', 'Repaid']
+
+  const columns = [
+    { field: "id", headerName: "ID", width: 100 },
+    {
+      field: "fullName",
+      headerName: "Full name",
+      description: "This column has a value getter and is not sortable.",
+      sortable: false,
+      width: 260,
+      valueGetter: (value, row) => `${generateName(row.id)}`,
+    },
+    {
+      field: "credit_amount",
+      headerName: "Loan amount",
+      width: 230,
+    },
+    {
+      field: "duration",
+      headerName: "Loan duration (months)",
+      width: 230,
+    },
+    {
+      field: "purpose",
+      headerName: "Purpose",
+      width: 190,
+      valueGetter: (value, row) => `${mappings[row.purpose]}`,
+    },
+    {
+      field: "class",
+      headerName: "Outcome",
+      width: 130,
+      valueGetter: (value, row) => `${classes[row.class]}`,
+    },
+  ];
 
   useEffect(() => {
     getUsers();
@@ -168,7 +204,7 @@ export default function Dashboard() {
             //   rows={users}
             // />
             <div className="h-[423px]">
-              <MUIDataTable onRowClick={getPredictionMUI} rows={users} />
+              <MUIDataTable columns={columns} onRowClick={getPredictionMUI} rows={users} />
             </div>
           )}
         </div>

@@ -63,7 +63,7 @@ export default function Applicants() {
       //   toast.success("Sent Successfully", {
       //     position: "top-left",
       //   });
-      navigate("/analysis", { state: { formEntry: body, response: data[0] } });
+      navigate("/analysis", { state: { formEntry: body, response: data[0], fullRow: params.row } });
       console.log(data);
     } catch (error) {
       toast.error("Failed", {

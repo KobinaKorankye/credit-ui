@@ -47,7 +47,7 @@ export default function SideNavLayout({ children }) {
           ))}
         </div>
       </div>
-      <div className="flex flex-col col-span-4 p-10 bg-[#EEEFF4]">
+      <div className="flex flex-col col-span-4 h-screen overflow-y-scroll p-10 bg-[#EEEFF4]">
         {children}
       </div>
     </div>
