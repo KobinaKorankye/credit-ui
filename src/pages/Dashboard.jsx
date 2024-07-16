@@ -139,7 +139,10 @@ export default function Dashboard() {
   }, []);
 
   if (status !== "succeeded") {
-    return <div className="font-bold text-3xl">Loading....</div>;
+    return <div className="bg-white h-screen flex flex-col items-center justify-center w-full overflow-scroll">
+      <Loader height={200} width={200} />
+      <div className="font-semibold">Please wait...</div>
+    </div>
   }
 
   return (
@@ -202,9 +205,9 @@ export default function Dashboard() {
           </div> */}
           {loading ? (
             <div className="bg-white h-[423px] flex flex-col items-center justify-center w-full overflow-scroll">
-            <Loader height={200} width={200} />
-            <div className="font-semibold">Loading...</div>
-          </div>
+              <Loader height={200} width={200} />
+              <div className="font-semibold">Loading...</div>
+            </div>
           ) : (
             // <Table
             //   onRowClick={getPrediction}

@@ -57,8 +57,8 @@ export default function SideNavLayout({ children }) {
           {!isCollapsed && <span>Credit Analytics</span>}
           <FontAwesomeIcon size="lg" icon={faChartGantt} />
           <div className="absolute flex justify-end items-center w-full h-full">
-            <div className="p-2 bg-white rounded-l-lg text-cyan-800">
-            <FontAwesomeIcon size="sm" icon={isCollapsed?faGreaterThan:faLessThan} />
+            <div className="p-2 bg-white rounded-l-lg text-cyan-800 cursor-pointer">
+            <FontAwesomeIcon size="xs" icon={isCollapsed?faGreaterThan:faLessThan} />
             </div>
           </div>
         </div>
