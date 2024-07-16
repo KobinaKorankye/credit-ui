@@ -98,7 +98,7 @@ export default function HistogramChart({
     xaxis: {
       type: "category",
       title: {
-        text: columnName, // Label for x-axis
+        text: title, // Label for x-axis
         style: {
           fontSize: "12px",
           fontWeight: "bold",

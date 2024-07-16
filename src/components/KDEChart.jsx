@@ -116,7 +116,7 @@ export default function KDEChart({
     xaxis: {
       type: "numeric",
       title: {
-        text: columnName, // Label for x-axis
+        text: title, // Label for x-axis
         style: {
           fontSize: "12px",
           fontWeight: "bold",

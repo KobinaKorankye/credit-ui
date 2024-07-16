@@ -66,7 +66,7 @@ export default function NormalBarChart({
     xaxis: {
       type: "category",
       title: {
-        text: columnTitle,
+        text: title,
       },
     },
     yaxis: {

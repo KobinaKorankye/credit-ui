@@ -21,6 +21,7 @@ import SideNavLayout from "../layouts/SideNavLayout";
 import FormPage from "../sections/FormPage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import Button from "../components/Button";
 
 export default function Analysis() {
   const [numColumn, setNumColumn] = useState("credit_amount");
@@ -87,21 +88,19 @@ export default function Analysis() {
                     <div className="flex w-[180px] text-white items-end justify-center">
                       <div
                         onClick={() => setShowNumGraph(true)}
-                        className={`flex-1 cursor-pointer ${
-                          showNumGraph
+                        className={`flex-1 cursor-pointer ${showNumGraph
                             ? "bg-teal-600 text-white"
                             : "bg-slate-200 text-black"
-                        } h-10 flex items-center justify-center text-sm rounded-l-lg`}
+                          } h-10 flex items-center justify-center text-sm rounded-l-lg`}
                       >
                         Numeric
                       </div>
                       <div
                         onClick={() => setShowNumGraph(false)}
-                        className={`flex-1 cursor-pointer ${
-                          !showNumGraph
+                        className={`flex-1 cursor-pointer ${!showNumGraph
                             ? "bg-teal-600 text-white"
                             : "bg-slate-200 text-black"
-                        } h-10 flex items-center justify-center text-sm rounded-r-lg`}
+                          } h-10 flex items-center justify-center text-sm rounded-r-lg`}
                       >
                         Categorical
                       </div>
@@ -161,21 +160,19 @@ export default function Analysis() {
                     <div className="flex w-[180px] text-white items-end justify-center">
                       <div
                         onClick={() => setShowNumGraph(true)}
-                        className={`flex-1 cursor-pointer ${
-                          showNumGraph
+                        className={`flex-1 cursor-pointer ${showNumGraph
                             ? "bg-teal-600 text-white"
                             : "bg-slate-200 text-black"
-                        } h-10 flex items-center justify-center text-sm rounded-l-lg`}
+                          } h-10 flex items-center justify-center text-sm rounded-l-lg`}
                       >
                         Numeric
                       </div>
                       <div
                         onClick={() => setShowNumGraph(false)}
-                        className={`flex-1 cursor-pointer ${
-                          !showNumGraph
+                        className={`flex-1 cursor-pointer ${!showNumGraph
                             ? "bg-teal-600 text-white"
                             : "bg-slate-200 text-black"
-                        } h-10 flex items-center justify-center text-sm rounded-r-lg`}
+                          } h-10 flex items-center justify-center text-sm rounded-r-lg`}
                       >
                         Categorical
                       </div>
@@ -233,12 +230,16 @@ export default function Analysis() {
             </div>
           )}
       </div>
-
+      {Object.keys(response).length != 0 && selectedNav == "Decision" && (
+        <div className="flex justify-center gap-3 bg-white py-28">
+          <Button text={'Reject'} className={'bg-red-600 hover:scale-[.9] duration-300 text-white px-6 rounded-lg'} />
+          <Button text={'Approve'} className={'bg-green-600 hover:scale-[.9] duration-300 text-white px-6 rounded-lg'} />
+        </div>
+      )}
       <div className="w-full flex flex-col items-center mb-10 bg-white rounded-b pb-10">
-        <div className="text-xl text-gray-700 font-bold my-2">
-          Model Prediction: {response.prediction}
-          <br />
-          Probability: {parseFloat(response.proba.toFixed(4)) * 100}%
+        <div className="text-xl text-gray-700 font-bold my-2 text-center">
+          <div>Model Prediction: {response.prediction}</div>
+          <div className="mt-2">Probability: {parseFloat(response.proba.toFixed(4)) * 100}%</div>
         </div>
       </div>
       {/* {Object.keys(response).length != 0 && show == "global" && (

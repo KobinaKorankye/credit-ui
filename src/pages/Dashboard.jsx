@@ -16,6 +16,7 @@ import { generateName, transformModelApiObject } from "../helpers";
 import client from "../api/client";
 import { columnNames, columns, mappings } from "../constants";
 import MUIDataTable from "../components/MUITable";
+import Loader from "../loader/Loader";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -200,7 +201,10 @@ export default function Dashboard() {
             </div>
           </div> */}
           {loading ? (
-            <div className="my-5 px-20 text-sm">Loading... </div>
+            <div className="bg-white h-[423px] flex flex-col items-center justify-center w-full overflow-scroll">
+            <Loader height={200} width={200} />
+            <div className="font-semibold">Loading...</div>
+          </div>
           ) : (
             // <Table
             //   onRowClick={getPrediction}
