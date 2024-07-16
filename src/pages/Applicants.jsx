@@ -23,7 +23,7 @@ export default function Applicants() {
       //   toast.success("Loaded Successfully", {
       //     position: "top-left",
       //   });
-      setGApplicants(data);
+      setGApplicants(data.reverse());
       console.log(data);
     } catch (error) {
       toast.error("Failed", {
