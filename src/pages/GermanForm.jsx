@@ -104,7 +104,7 @@ export default function GermanForm() {
         .label("Other Debtors/Guarantors"),
       installment_rate_in_percentage_of_disposable_income: Yup.number()
         .min(0, "The installment rate must be a non-negative number.")
-        .max(1, "The installment rate must not exceed 1.")
+        .max(100, "The installment rate must not exceed 100%.")
         .required()
         .label("Installment Rate in Percentage of Disposable Income"),
     }),
