@@ -200,7 +200,7 @@ export default function AdehyemanForm() {
           </div>
         ) : (
           <div className="bg-white flex flex-col items-start w-full pt-10 h-full overflow-y-scroll px-20">
-            <div className="text-xl py-2 font-semibold my-5 text-amber-600">
+            <div className="text-xl py-2 font-semibold my-5 text-sky-600">
               Loan Application Form
             </div>
             <Formik
