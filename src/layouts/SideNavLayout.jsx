@@ -46,24 +46,18 @@ export default function SideNavLayout({ children }) {
   return (
     <div className="flex h-screen w-full">
       <div
-        className={`flex flex-col duration-300 ${
-          isCollapsed ? "w-[5%]" : "w-[20%]"
-        } items-end bg-sky-900`}
+        className={`flex flex-col duration-300 ${isCollapsed ? "w-[5%]" : "w-[15%]"
+          } items-end bg-sky-900`}
       >
         <div
           onClick={toggle}
-          className="w-full relative flex justify-center items-center font-bold text-xl gap-3 px-5 py-20 text-cyan-100"
+          className="w-full relative flex justify-center items-center font-bold text-base gap-3 px-5 py-20 text-cyan-100"
         >
           {!isCollapsed && <span>Credit Analytics</span>}
           <FontAwesomeIcon size="lg" icon={faChartGantt} />
-          <div className="absolute flex justify-end items-center w-full h-full">
-            <div className="p-2 bg-white rounded-l-lg text-cyan-800 cursor-pointer">
-            <FontAwesomeIcon size="xs" icon={isCollapsed?faGreaterThan:faLessThan} />
-            </div>
-          </div>
         </div>
         <div
-          className={`flex-1 flex flex-col gap-5 cursor-pointer w-[70%] font-bold uppercase text-sm`}
+          className={`flex-1 flex flex-col gap-5 px-5 cursor-pointer w-full font-bold uppercase text-sm`}
         >
           {navs.map((nav) => (
             <NavItem
@@ -77,9 +71,8 @@ export default function SideNavLayout({ children }) {
         </div>
       </div>
       <div
-        className={`flex flex-col ${
-          isCollapsed ? "w-[95%]" : "w-[80%]"
-        } h-screen overflow-y-scroll p-10 bg-[#EEEFF4]`}
+        className={`flex flex-col ${isCollapsed ? "w-[95%]" : "w-[85%]"
+          } h-screen overflow-y-scroll p-10 bg-[#EEEFF4]`}
       >
         {children}
       </div>

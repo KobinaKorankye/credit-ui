@@ -149,26 +149,26 @@ export default function Dashboard() {
     <SideNavLayout>
       <div className="grid grid-cols-8 gap-5">
         <div className="flex flex-col rounded-xl py-5 shadow-lg col-span-2 bg-white">
-          <div className="text-amber-500 px-8 font-bold uppercase">
+          <div className="text-sky-500 px-8 font-bold uppercase">
             Apply for a loan
           </div>
-          <div className="px-8 text-sm my-auto">
+          <div className="px-8 text-sm font-medium my-auto">
             To add a loan applicant into the system, please select one of the
             options below
           </div>
-          <div className="my-auto">
+          <div className="">
             <Button
               className={
-                "bg-gradient-to-b from-black via-red-500 to-amber-500 hover:scale-90 duration-200 text-white rounded-lg"
+                "bg-sky-500 hover:scale-90 duration-200 text-white rounded-lg"
               }
-              text={"German"}
+              text={"Public"}
               onClick={() => navigate("/german")}
             />
             <Button
               className={
-                "bg-gradient-to-b from-red-600 via-amber-500 to-green-700 hover:scale-90 duration-200 rounded-lg"
+                "bg-rose-500 text-white hover:scale-90 duration-200 rounded-lg"
               }
-              text={"Adehyeman"}
+              text={"Local"}
               onClick={() => navigate("/adehyeman")}
             />
           </div>
