@@ -1,9 +1,9 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import dbClient from "../api/dbClient";
+import client from "../api/client";
 
 // 1. Define an async function using createAsyncThunk
 export const fetchGraphData = createAsyncThunk('data/fetchGraphData', async () => {
-    const response = await dbClient.get('/users/graph-data');
+    const response = await client.get('/graph-data');
     return response.data; // This will be the payload of the fulfilled action
 });
 

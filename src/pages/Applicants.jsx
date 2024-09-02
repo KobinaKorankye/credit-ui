@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import dbClient from "../api/dbClient";
 import { toast } from "react-toastify";
 import Table from "../components/Table";
 import SideNavLayout from "../layouts/SideNavLayout";
@@ -19,7 +18,7 @@ export default function Applicants() {
   const getGApplicants = async () => {
     setLoading(true);
     try {
-      const { data } = await dbClient.get("/users/gapplicants");
+      const { data } = await client.get("/gapplicants");
       //   toast.success("Loaded Successfully", {
       //     position: "top-left",
       //   });

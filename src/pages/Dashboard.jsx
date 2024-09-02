@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import KDEChart from "../components/KDEChart";
 import PieChart from "../components/PieChart";
 import { useEffect } from "react";
-import dbClient from "../api/dbClient";
 import { toast } from "react-toastify";
 import Table from "../components/Table";
 import SearchBar from "../components/SearchBar";
@@ -77,10 +76,10 @@ export default function Dashboard() {
     setLoading(false);
   };
 
-  const getUsers = async () => {
+  const getLoanees = async () => {
     setLoading(true);
     try {
-      const { data } = await dbClient.get("/users");
+      const { data } = await client.get("/loanees");
       // toast.success("Loaded Successfully", {
       //   position: "top-left",
       // });
@@ -130,12 +129,12 @@ export default function Dashboard() {
       field: "class",
       headerName: "Outcome",
       width: 130,
-      valueGetter: (value, row) => `${classes[row.class]}`,
+      valueGetter: (value, row) => `${classes[row.class_]}`,
     },
   ];
 
   useEffect(() => {
-    getUsers();
+    getLoanees();
   }, []);
 
   if (status !== "succeeded") {

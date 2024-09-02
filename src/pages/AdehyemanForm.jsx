@@ -28,7 +28,6 @@ import {
   personalStatusSexEncoder,
   transformModelApiObject,
 } from "../helpers";
-import dbClient from "../api/dbClient";
 import { useNavigate } from "react-router-dom";
 
 
@@ -159,7 +158,7 @@ export default function AdehyemanForm() {
     setLoading(true);
     const saveableData = personalStatusSexEncoder(form);
     try {
-      const { data } = await dbClient.post("/users/gapplicants", saveableData);
+      const { data } = await client.post("/gapplicants", saveableData);
       toast.success("Saved", {
         position: "top-left",
       });

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const client = axios.create({
-  baseURL: "https://credit-api-4krg.onrender.com",
+  baseURL: process.env.BACKEND_BASE_URL,
 });
 
 export default client;
