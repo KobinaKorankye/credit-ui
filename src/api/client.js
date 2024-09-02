@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const client = axios.create({
-  baseURL: process.env.BACKEND_BASE_URL,
+  baseURL: "http://54.246.247.31:8000",
 });
 
 export default client;
