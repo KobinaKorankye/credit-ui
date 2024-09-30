@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 export default function Landing() {
   const navigate = useNavigate();
   return (
-    <div className="bg-white w-full h-screen flex flex-col items-center justify-center gap-10 overflow-y-scroll px-20 lg:px-[200px] xl:px-[300px]">
+    <div className="bg-white w-full h-screen flex flex-col items-center justify-center gap-10 overflow-y-auto px-20 lg:px-[200px] xl:px-[300px]">
       <div className="text-2xl font-bold">
         Which loan application form would you like to fill?
       </div>

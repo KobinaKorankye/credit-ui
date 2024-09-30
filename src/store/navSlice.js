@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const navSlice = createSlice({
   name: 'nav',
   initialState: {
-    collapsed: false,
+    collapsed: false, currentSideNavSection: "Dashboard"
   },
   reducers: {
     toggleNavbar: (state) => {
@@ -12,9 +12,12 @@ const navSlice = createSlice({
     setNavbarState: (state, action) => {
       state.collapsed = action.payload;
     },
+    setCurrentSideNavSection: (state, action) => {
+      state.currentSideNavSection = action.payload;
+    },
   },
 });
 
-export const { toggleNavbar, setNavbarState } = navSlice.actions;
+export const { toggleNavbar, setNavbarState, setCurrentSideNavSection } = navSlice.actions;
 
 export default navSlice.reducer;

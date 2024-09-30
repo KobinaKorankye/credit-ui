@@ -16,72 +16,45 @@ import { mappings } from "../constants";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGraphData } from "../store/graphDataSlice";
 import { useLocation } from "react-router-dom";
-import { generateName } from "../helpers";
+import { generateName, getApplicantInfoField } from "../helpers";
 
-export default function FormPage() {
-  const { formEntry, fullRow } = useLocation().state;
+export default function FormPage({ forApplicants }) {
+  const { readableBody } = useLocation().state;
 
-  const fromTable = Object.keys(fullRow).length > 0;
-  const initialValues = fromTable
-    ? {
-        ...Object.fromEntries(
-          Object.entries(fullRow).map(([key, value]) => [
-            key,
-            mappings[value] || value,
-          ])
-        ),
-        fullName: generateName(fullRow.id),
-      }
-    : {
-        ...Object.fromEntries(
-          Object.entries(formEntry).map(([key, value]) => [
-            key,
-            mappings[value] || value,
-          ])
-        ),
-      };
+  const initialValues = forApplicants
+    ? { ...readableBody, ...getApplicantInfoField(readableBody) }
+    : readableBody;
   return (
-    <div className="bg-white w-full h-screen overflow-y-scroll px-44">
+    <div className="bg-white w-full overflow-y-auto px-16">
       <Formik initialValues={initialValues}>
         <>
-          <div className="text=2xl font-bold pt-10 pb-2">Personal Details</div>
+          <div className="tracking-wider font-serif text-sm font-bold pt-10 pb-2">Personal Details</div>
 
-          <div className="w-full grid md:grid-cols-3 gap-4">
-            {fromTable && (
-              <FormInput
-                disabled
-                label="Full Name"
-                name={"fullName"}
-                type="text"
-              />
-            )}
+          <div className="w-full grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            <FormInput
+              disabled
+              label="Full Name"
+              name={"full_name"}
+              type="text"
+            />
             <FormInput disabled name="age" type="number" />
             <FormInput disabled name="telephone" />
-            {fromTable ? (
-              <>
-                <FormInput disabled name="personal_status_and_sex" />
-              </>
-            ) : (
-              <>
-                <FormInput
-                  disabled
-                  label="Marital Status"
-                  name="marital_status"
-                />
-                <FormInput disabled label="Sex" name="sex" />
-              </>
-            )}
+            <FormInput
+              disabled
+              label="Marital Status"
+              name="marital_status"
+            />
+            <FormInput disabled label="Sex" name="sex" />
             <FormInput disabled label="Foreign Worker" name="foreign_worker" />
           </div>
-
           <hr className="w-full mt-20 border-t-50 border-black" />
-          <h2 className="font-bold pt-10 pb-2">Financial Details</h2>
-          <div className="w-full grid md:grid-cols-3 gap-4">
-            {fromTable && (
+          <div className="tracking-wider font-serif text-sm font-bold pt-10 pb-2">Financial Details</div>
+          <div className="w-full grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            {!forApplicants && (
               <FormInput
                 disabled
                 label="Customer ID"
-                name={"_id"}
+                name={"customer_id"}
                 type="text"
               />
             )}
@@ -100,16 +73,16 @@ export default function FormPage() {
           </div>
 
           <hr className="w-full mt-20 border-t-50 border-black" />
-          <h2 className="font-bold pt-10 pb-5">Loan Details</h2>
-          <div className="w-full grid md:grid-cols-3 gap-4">
-            <FormInput disabled name="credit_amount" type="number" />
+          <div className="tracking-wider font-serif text-sm font-bold pt-10 pb-5">Loan Details</div>
+          <div className="w-full grid lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-20">
+            <FormInput disabled name={!forApplicants ? "loan_amount" : "loan_amount_requested"} label={'Loan amount'} type="number" />
             <FormInput disabled name="purpose" />
             <FormInput
               disabled
               name="installment_rate_in_percentage_of_disposable_income"
               type="number"
             />
-            <FormInput disabled name="duration" type="number" />
+            <FormInput disabled name="duration_in_months" label={'Loan duration (months)'} type="number" />
             <FormInput
               disabled
               name="number_of_existing_credits_at_this_bank"
@@ -119,8 +92,6 @@ export default function FormPage() {
             <FormInput disabled name="other_installment_plans" />
             <FormInput disabled name="other_debtors_guarantors" />
           </div>
-
-          <hr className="w-full mt-20 border-t-50 border-black" />
         </>
       </Formik>
     </div>

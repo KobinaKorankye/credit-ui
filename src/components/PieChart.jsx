@@ -1,5 +1,6 @@
 import Chart from "react-apexcharts";
 import React, { useEffect, useState } from "react";
+import { themePalette } from "../../themePalette";
 
 export default function PieChart({
   columnArray,
@@ -50,7 +51,7 @@ export default function PieChart({
       },
     },
     labels: labelsData,
-    colors: ["#008FFB", "#FF4560"],
+    colors: [themePalette.primary, themePalette.secondary],
     legend: {
       position: 'bottom', // Position the legend at the top
       horizontalAlign: 'center', // Align the legend to the right

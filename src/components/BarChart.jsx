@@ -1,5 +1,6 @@
 import React from "react";
 import Chart from "react-apexcharts";
+import { themePalette } from "../../themePalette";
 
 function sortObjectByValues(obj) {
   // Convert the object to an array of key-value pairs
@@ -14,7 +15,7 @@ function sortObjectByValues(obj) {
   return sortedObj;
 }
 
-const BarChart = ({ data, bias, global }) => {
+const BarChart = ({ data, bias, global, height=250 }) => {
   // Add bias as an additional feature
   const modifiedData = !global?{
     ...data,
@@ -44,12 +45,12 @@ const BarChart = ({ data, bias, global }) => {
             {
               from: -Infinity,
               to: 0,
-              color: "#FF4560",
+              color: themePalette.primary,
             },
             {
               from: 0,
               to: Infinity,
-              color: global? "#008FFB" :"#008FFB", 
+              color: global? "#008FFB" :themePalette.secondary, 
             },
           ],
         },
@@ -97,11 +98,11 @@ const BarChart = ({ data, bias, global }) => {
         !global &&
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{ width: '10px', height: '10px', backgroundColor: '#FF4560', marginRight: '5px' }}></div>
+          <div style={{ width: '10px', height: '10px', backgroundColor: themePalette.primary, marginRight: '5px' }}></div>
           <span className="text-sm" style={{ color: '#000' }}>Defaulting</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
-          <div style={{ width: '10px', height: '10px', backgroundColor: '#008FFB', marginRight: '5px' }}></div>
+          <div style={{ width: '10px', height: '10px', backgroundColor: themePalette.secondary, marginRight: '5px' }}></div>
           <span className="text-sm" style={{ color: '#000' }}>Not Defaulting</span>
         </div>
       </div>
@@ -110,7 +111,7 @@ const BarChart = ({ data, bias, global }) => {
         options={options}
         series={chartData.series}
         type="bar"
-        height={600}
+        height={height}
       />
     </div>
   );

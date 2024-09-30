@@ -1,35 +1,40 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { capitalize } from "@mui/material";
 import { useFormikContext } from "formik";
 import React from "react";
 import { COLUMN_LABELS } from "../../constants";
 
-export default function FormInput({
-  boxClassName,
+const FormInput = ({
+  boxClassName = '',
   label,
-  labelClass,
-  icon,
+  labelClass = '',
+  icon: Icon,
   name,
   type,
-  placeholder,
-  disabled,
-}) {
-  const { handleChange, errors, touched, setFieldTouched, values } =
-    useFormikContext();
+  noLabel,
+  placeholder = '',
+  disabled = false,
+}) => {
+  const {
+    handleChange,
+    errors,
+    touched,
+    setFieldTouched,
+    values,
+  } = useFormikContext();
 
   return (
-    <div className={`mt-3 ${boxClassName}`}>
-      <label className={`block text-xs mb-2 font-semibold text-gray-800`} for={name}>
-      {label || COLUMN_LABELS[name]}
-      </label>
+    <div className={`${boxClassName}`}>
+      {
+        !noLabel &&
+        <label className={`block text-[0.8rem] font-medium mb-1.5 text-gray-600`} htmlFor={name}>
+          {label || COLUMN_LABELS[name]}
+        </label>
+      }
       <div
-        className="flex w-full items-center shadow appearance-none rounded border border-slate-300 w-full py-2 px-3 h-[2.5rem] text-gray-900 
-                leading-tight "
+        className="flex w-full items-center shadow appearance-none rounded-lg border border-slate-300 px-4 py-2 text-gray-900 
+                leading-tight"
       >
-        {icon && <FontAwesomeIcon
-          className="mr-4 ml-1 text-gray-600/80"
-          size="md"
-          icon={icon}
-        />}
+        {Icon && <Icon />}
         <input
           name={name}
           type={type}
@@ -38,9 +43,9 @@ export default function FormInput({
             setFieldTouched(name);
           }}
           placeholder={placeholder}
-          value={values[name]}
+          value={values[name] || ''}
           onChange={handleChange}
-          className="w-full focus:outline-none focus:shadow-outline bg-transparent text-gray-900"
+          className="w-full focus:outline-none focus:shadow-outline bg-transparent text-sm"
           id={name}
         />
       </div>
@@ -53,4 +58,6 @@ export default function FormInput({
       </div>
     </div>
   );
-}
+};
+
+export default FormInput;

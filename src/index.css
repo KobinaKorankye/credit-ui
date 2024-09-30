@@ -2,27 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+::-webkit-scrollbar {
+  width: 5px;
 }
 
-body {
-  margin: 0;
+/* Track (background of the scrollbar) */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
 }
 
-@font-face {
-  font-family: 'RobotoC';
-  src: local('RobotoC'), url(./assets/fonts/RobotoCondensed.ttf) format('truetype');
-  /* other formats include: 'woff2', 'truetype, 'opentype',
-                            'embedded-opentype', and 'svg' */
+/* Handle (the part you can grab and move) */
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
 }
 
-@font-face {
-  font-family: 'Quicksand';
-  src: local('Quicksand'), url(./assets/fonts/Quicksand.ttf) format('truetype');
-  /* other formats include: 'woff2', 'truetype, 'opentype',
-                            'embedded-opentype', and 'svg' */
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

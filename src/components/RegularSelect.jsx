@@ -18,13 +18,13 @@ export default function RegularSelect({
   return (
     <div className={`mt-3 ${boxClassName}`}>
       <label
-        className={`block text-gray-800 text-xs font-semibold mb-2 ${labelClass}`}
+        className={`block text-gray-600 text-xs font-semibold mb-1 ${labelClass}`}
         htmlFor={name}
       >
         {label || name}
       </label>
       <div
-        className="flex w-full items-center shadow appearance-none rounded border border-slate-300 py-2 px-3 h-[2.5rem] text-white 
+        className="flex w-full items-center appearance-none rounded border border-gray-400 py-2 px-3 h-[2.5rem] text-white 
                 leading-tight"
       >
         {icon && (

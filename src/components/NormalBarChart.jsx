@@ -3,11 +3,12 @@ import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { Tooltip } from "react-tooltip";
+import { themePalette } from "../../themePalette";
 
 export default function NormalBarChart({
   columnArray,
   classArray,
-  columnTitle,
+  height=250,
   title,
   yLabel,
   highlightPoint,
@@ -107,12 +108,12 @@ export default function NormalBarChart({
     {
       name: "Defaulting",
       data: defaultingData,
-      color: "#FF4560", // Specific color for Defaulting
+      color: themePalette.secondary, // Specific color for Defaulting
     },
     {
       name: "Not Defaulting",
       data: notDefaultingData,
-      color: "#008FFB", // Specific color for Not Defaulting
+      color: themePalette.primary, // Specific color for Not Defaulting
     },
   ];
 
@@ -136,7 +137,7 @@ export default function NormalBarChart({
           </Tooltip>
         </>
       )}
-      <Chart options={options} series={series} type="bar" height={500} />
+      <Chart options={options} series={series} type="bar" height={height} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faInfo } from "@fortawesome/free-solid-svg-icons";
 import { faInfoCircle } from "@fortawesome/free-solid-svg-icons/faInfoCircle";
 import { Tooltip } from "react-tooltip";
+import { themePalette } from "../../themePalette";
 
 export default function KDEChart({
   columnArray,
@@ -67,7 +68,7 @@ export default function KDEChart({
       setDefaultingData({
         name: "Defaulting",
         data: dxValues.map((x, index) => [x, dkdeYValues[index]]),
-        color: "#FF4560", // Specific color for Defaulting
+        color: themePalette.secondary, // Specific color for Defaulting
       });
 
       const nvalues = notDefaultingData
@@ -86,7 +87,7 @@ export default function KDEChart({
       setNotDefaultingData({
         name: "Not Defaulting",
         data: ndxValues.map((x, index) => [x, nkdeYValues[index]]),
-        color: "#008FFB", // Specific color for Not Defaulting
+        color: themePalette.primary, // Specific color for Not Defaulting
       });
     }
 
@@ -181,7 +182,7 @@ export default function KDEChart({
           <div className="absolute text-blue-800 -top-5 left-2 cursor-pointer" data-tooltip-id='desc'>
             <FontAwesomeIcon size="xl" icon={faInfoCircle} />
           </div>
-          <Tooltip style={{ width: '400px' }} id="desc" place="bottom">
+          <Tooltip style={{ width: '400px' }} id="desc" place="right">
             This density plot displays the probabilty distribution of <span className="font-bold text-green-500">{title.toLowerCase()}</span>  values for past approved loan customers. <br /> It compares defaulting and non-defaulting customers on the same plot`
           </Tooltip>
         </>

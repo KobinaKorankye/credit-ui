@@ -1,17 +1,15 @@
 import React from 'react';
 import { useFormikContext } from 'formik';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { COLUMN_LABELS } from '../../constants';
 
-export default function FormSelect({
-  boxClassName,
+const FormSelect = ({
+  boxClassName = '',
   label,
-  labelClass,
-  icon,
+  labelClass = '',
+  icon: Icon,
   name,
   options,
-  disabled,
-}) {
+  disabled = false,
+}) => {
   const {
     handleChange,
     errors,
@@ -21,26 +19,22 @@ export default function FormSelect({
   } = useFormikContext();
 
   return (
-    <div className={`mt-3 ${boxClassName}`}>
-      <label className={`block text-gray-800 text-xs font-semibold mb-2 ${labelClass}`} htmlFor={name}>
-        {label || COLUMN_LABELS[name]}
+    <div className={`${boxClassName}`}>
+      <label className={`block text-[0.8rem] font-medium mb-1.5 text-gray-600`} htmlFor={name}>
+        {label}
       </label>
       <div
-        className="flex w-full items-center shadow appearance-none rounded border border-slate-300 py-2 px-3 h-[2.5rem] text-white 
+        className="flex w-full items-center shadow appearance-none rounded border border-slate-300 px-4 py-2 text-gray-900 
                 leading-tight"
       >
-        {icon && <FontAwesomeIcon
-          className="mr-4 ml-1 text-gray-600/80"
-          size="md"
-          icon={icon}
-        />}
+        {Icon && <Icon />}
         <select
           name={name}
           disabled={disabled}
           onBlur={() => setFieldTouched(name)}
-          value={values[name]}
+          value={values[name] || ''}
           onChange={handleChange}
-          className="w-full focus:outline-none focus:shadow-outline bg-transparent text-gray-900"
+          className="w-full focus:outline-none focus:shadow-outline bg-transparent text-sm"
           id={name}
         >
           <option key={1} value={""}>{""}</option>
@@ -58,4 +52,6 @@ export default function FormSelect({
       </div>
     </div>
   );
-}
+};
+
+export default FormSelect;

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Tooltip } from "react-tooltip";
 import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { themePalette } from "../../themePalette";
 
 export default function HistogramChart({
   columnArray,
@@ -174,7 +175,7 @@ export default function HistogramChart({
         <div className="absolute text-blue-800 -top-5 left-2 cursor-pointer" data-tooltip-id='desc2'>
         <FontAwesomeIcon size="xl" icon={faInfoCircle} />
       </div>
-      <Tooltip style={{ width: '400px' }} id="desc2" place="bottom">
+      <Tooltip style={{ width: '400px' }} id="desc2" place="right">
         This histogram displays the frequency distribution of <span className="font-bold text-green-500">{title.toLowerCase()}</span> values for past approved loan customers. <br /> It compares defaulting and non-defaulting customers on the same plot.
       </Tooltip>
         </>
@@ -182,8 +183,8 @@ export default function HistogramChart({
       <Chart
         options={options}
         series={[
-          { name: "Defaulting", data: defaultingData, color: "#FF4560" },
-          { name: "Not Defaulting", data: notDefaultingData, color: "#008FFB" },
+          { name: "Defaulting", data: defaultingData, color: themePalette.primary },
+          { name: "Not Defaulting", data: notDefaultingData, color: themePalette.secondary },
         ]}
         type="bar"
         height={height}

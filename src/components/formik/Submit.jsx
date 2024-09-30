@@ -1,16 +1,23 @@
 import { useFormikContext } from "formik";
 import React from "react";
 
-export default function Submit({ text, className }) {
+const Submit = ({ text, className }) => {
   const { handleSubmit } = useFormikContext();
+
+  const handleClick = (e) => {
+    e.preventDefault();
+    handleSubmit();
+  };
+
   return (
     <button
-      // style={{ fontFamily: "Quicksand" }}
-      onClick={handleSubmit}
+      onClick={handleClick}
       type="submit"
       className={`${className}`}
     >
       {text}
     </button>
   );
-}
+};
+
+export default Submit;

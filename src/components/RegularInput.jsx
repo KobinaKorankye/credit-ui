@@ -16,11 +16,11 @@ export default function RegularInput({
 }) {
   return (
     <div className={`mt-3 ${boxClassName}`}>
-      <label className={`block text-xs font-semibold mb-2 text-gray-800`} for={name}>
+      <label className={`block text-xs font-semibold mb-1 text-gray-600`} for={name}>
         {label || name}
       </label>
       <div
-        className="flex w-full items-center shadow appearance-none rounded border border-slate-300 w-full py-2 px-3 h-[2.5rem] text-gray-900 
+        className="flex w-full items-center appearance-none rounded border border-gray-400 w-full py-2 px-3 h-[2.5rem] text-gray-900 
                 leading-tight "
       >
         {icon && (

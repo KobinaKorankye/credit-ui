@@ -7,12 +7,12 @@ import { mappings } from "../constants";
 const defaultColumns = [
   { field: "id", headerName: "ID", width: 100 },
   {
-    field: "fullName",
+    field: "full_name",
     headerName: "Full name",
     description: "This column has a value getter and is not sortable.",
     sortable: false,
     width: 260,
-    valueGetter: (value, row) => `${generateName(row.id)}`,
+    valueGetter: (value, row) => `${generateName(row.person_id)}`,
   },
   {
     field: "credit_amount",

@@ -1,11 +1,10 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
-export default function NavItem({icon, text, path, selectedNav, onClick}) {
+export default function NavItem({ icon: Icon, text, isCollapsed, path, currentSideNavSection, onClick }) {
   return (
-    <div onClick={onClick} className={`flex gap-5 px-5 truncate rounded-full text-xs duration-100 items-center ${selectedNav==path?'bg-gradient-to-r from-white to-[#EEEFF4] text-sky-700':'text-white'} py-3`}>
-      <FontAwesomeIcon icon={icon} />
-      {text}
+    <div onClick={onClick} className={`flex rounded-xl gap-2 ${isCollapsed ? 'justify-center' : 'px-5'} truncate tracking-wide rounded whitespace-nowrap overflow-hidden text-sm transition-all duration-100 items-center ${currentSideNavSection == text ? 'bg-white text-primary' : 'text-white'} py-3`}>
+      <Icon className={'text-xl'} />
+      {!isCollapsed && `${text}`}
     </div>
   );
 }
