@@ -112,7 +112,7 @@ const predictionColumns = [
         headerName: "Full name",
         description: "This column has a value getter and is not sortable.",
         sortable: false,
-        width: 260,
+        width: 200,
         valueGetter: (value, row) => getApplicantInfoField(row).full_name,
     },
     {
@@ -144,6 +144,8 @@ export default function Products() {
     const [subFilter, setSubFilter] = useState({})
     const [eligibleNumber, setEligibleNumber] = useState(5)
     const [latestLogicalOp, setLatestLogicalOp] = useState('or')
+    const [taskId, setTaskId] = useState(null);
+    const eventSourceRef = useRef(null);
 
     const navigate = useNavigate();
 
@@ -154,6 +156,7 @@ export default function Products() {
             //     position: "top-left",
             //   });
             setProducts(data.reverse());
+            setSelectedProduct(data.find((prod) => prod.id === selectedProduct?.id))
             console.log(data);
         } catch (error) {
             toast.error("Failed", {
@@ -212,25 +215,46 @@ export default function Products() {
         setLoading(true);
         setLoadingSource("eligible");
         try {
+            // Start the Celery task
             const { data } = await client.get(`/fx/get-eligible/${selectedProduct.id}?limit=${eligibleNumber}${isCustomerOnly ? "&type=customers" : ''}`);
-            console.log(data);
-            toast.success("Processed Successfully", {
-                position: "top-left",
-            });
-            setProducts((prev) => prev.map((prod) => prod.id == data.id ? data : prod))
-            setSelectedProduct(data)
-            setSelectedProductFilters(data.filters || {})
+            setTaskId(data.task_id); // Set the taskId in state to trigger the useEffect
+            setSelectedProduct({ ...selectedProduct, processing: true })
+            setProducts(products.map((prod) => selectedProduct.id === prod.id ? { ...prod, processing: true } : prod))
         } catch (error) {
-            toast.error("Failed", {
+            toast.error("Failed to start processing", {
                 position: "top-left",
             });
-            console.log(error);
+            setLoading(false);
+            setSelectedProduct({ ...selectedProduct, processing: false })
+            setProducts(products.map((prod) => selectedProduct.id === prod.id ? { ...prod, processing: false } : prod))
+            console.error(error);
         }
-        setLoading(false);
     };
+
+    // const getEligible = async () => {
+    //     setLoading(true);
+    //     setLoadingSource("eligible");
+    //     try {
+    //         const { data } = await client.get(`/fx/get-eligible/${selectedProduct.id}?limit=${eligibleNumber}${isCustomerOnly ? "&type=customers" : ''}`);
+    //         console.log(data);
+    //         toast.success("Processed Successfully", {
+    //             position: "top-left",
+    //         });
+    //         setProducts((prev) => prev.map((prod) => prod.id == data.id ? data : prod))
+    //         setSelectedProduct(data)
+    //         setSelectedProductFilters(data.filters || {})
+    //     } catch (error) {
+    //         toast.error("Failed", {
+    //             position: "top-left",
+    //         });
+    //         console.log(error);
+    //     }
+    //     setLoading(false);
+    // };
 
     const showProductDetails = async (params, event, details) => {
         setSelectedProduct(params.row)
+        setEligibleNumber(params.row?.eligible_customers ? params.row?.eligible_customers.length : 0)
         setSelectedProductFilters(params.row.filters || {})
         setIsDetailModalOpen(true)
     };
@@ -239,6 +263,49 @@ export default function Products() {
         setSelectedCustomer(params.row)
         setIsCustomerDetailModalOpen(true)
     };
+
+    useEffect(() => {
+        if (!taskId) return;
+
+        if (eventSourceRef.current) {
+            eventSourceRef.current.close();
+        }
+
+        // Create a new EventSource to listen for task updates
+        const eventSource = new EventSource(`http://localhost:8000/fx/task-status/${taskId}`);
+        eventSourceRef.current = eventSource;
+
+        eventSource.onmessage = (event) => {
+            const { status } = JSON.parse(event.data);
+
+            console.log(event)
+            
+            if (status === 'SUCCESS') {
+                // Fetch updated product data when processing is complete
+                getProducts();
+                toast.success("Processed Successfully", {
+                    position: "top-left",
+                });
+                setLoading(false);
+                eventSource.close(); // Close the EventSource when processing is complete
+                setTaskId(null); // Reset taskId
+            } else if (status === 'FAILURE') {
+                toast.error("Processing failed", {
+                    position: "top-left",
+                });
+                setLoading(false);
+                eventSource.close(); // Close the EventSource on failure
+                setTaskId(null); // Reset taskId
+            }
+        };
+
+        return () => {
+            // Clean up EventSource if the component unmounts or taskId changes
+            if (eventSourceRef.current) {
+                eventSourceRef.current.close();
+            }
+        };
+    }, [taskId]);
 
     useEffect(() => {
         (async () => {
@@ -294,12 +361,12 @@ export default function Products() {
                                 }
                                 {
                                     Object.keys(filters).length !== 0 &&
-                                    <div className="flex bg-gray-100 border border-gray-300 shadow rounded-lg py-1 font-mono mt-8 text-sm">{filterToString(filters)}</div>
+                                    <div className="flex bg-gray-100 border border-gray-300 shadow rounded-lg p-1 font-mono mt-8 text-sm">{filterToString(filters)}</div>
                                 }
 
                                 {
-                                    loading ?
-                                        <div className={'bg-surface-light text-white px-4 py-3 text-center text-sm rounded mt-12 w-full'}>Loading...</div>
+                                    (loading && loadingSource === 'create') ?
+                                        <div className={'bg-surface-light/70 text-white px-4 py-3 text-center text-sm rounded mt-12 w-full'}>Loading...</div>
                                         :
                                         (
                                             (Object.keys(filters).length !== 0 && !isValidFilter(filters)) ?
@@ -370,6 +437,10 @@ export default function Products() {
                     <div onClick={(e) => { e.stopPropagation() }} className="max-w-full max-h-full overflow-y-auto bg-white px-14 pt-5 pb-10 rounded">
                         <div className="flex justify-end"> <FiX className="text-lg cursor-pointer" onClick={() => { setIsCustomerDetailModalOpen(false) }} /></div>
                         <div className="text-xl font-semibold mb-10">Customer Details</div>
+                        <div className="flex gap-3">
+                            <div className="font-semibold">customer?:</div>
+                            <div className="">{selectedCustomer?.customer ? 'True' : 'False'}</div>
+                        </div>
                         {selectedCustomer &&
                             Object.entries(getApplicantInfoField(selectedCustomer)).map(([key, value]) => (
                                 <div className="flex gap-3">
@@ -396,8 +467,8 @@ export default function Products() {
                 </div>
             </Modal2>
             <Modal isOpen={isDetailModalOpen}>
-                <div onClick={() => { setIsDetailModalOpen(false) }} className="w-screen h-screen flex flex-col p-10 items-center bg-black/50">
-                    <div onClick={(e) => { e.stopPropagation() }} className="flex flex-col w-full h-full bg-white overflow-y-auto px-14 pt-5 pb-10 rounded">
+                <div onClick={() => { setIsDetailModalOpen(false) }} className="w-screen h-screen overflow-y-auto flex flex-col p-10 items-center bg-black/50">
+                    <div onClick={(e) => { e.stopPropagation() }} className="flex flex-col w-full bg-white px-14 pt-5 pb-10 rounded">
                         <div className="flex justify-end"> <FiX className="text-lg cursor-pointer" onClick={() => { setIsDetailModalOpen(false) }} /></div>
                         <div className="text-xl font-semibold">Product Details</div>
                         <div className="flex-1 grid grid-cols-2 gap-10">
@@ -431,15 +502,15 @@ export default function Products() {
                                     }
                                     {
                                         Object.keys(selectedProductFilters).length !== 0 &&
-                                        <div className="flex bg-gray-100 border border-gray-300 shadow rounded-lg py-1 font-mono mt-8 text-sm">{filterToString(selectedProductFilters)}</div>
+                                        <div className="flex bg-gray-100 border border-gray-300 shadow rounded-lg p-1 font-mono mt-8 text-sm">{filterToString(selectedProductFilters)}</div>
                                     }
 
                                     <div className="flex w-full justify-between mt-12">
                                         <ActionButton className={`${isUpdateFormFieldDisabled ? 'bg-primary' : 'bg-alt'} text-white px-4 py-3 text-sm rounded`} noIcon text={isUpdateFormFieldDisabled ? 'Edit' : 'Lock'} onClick={() => setIsUpdateFormFieldDisabled(!isUpdateFormFieldDisabled)} />
                                         {
                                             !isUpdateFormFieldDisabled &&
-                                            (loading ?
-                                                <div className={'bg-surface-light text-white px-4 py-3 text-center text-sm rounded'}>Loading...</div>
+                                            ((loading && loadingSource === 'update') ?
+                                                <div className={'bg-surface-light/70 text-white px-4 py-3 text-center text-sm rounded'}>Loading...</div>
                                                 :
                                                 <Submit className={'bg-surface-light text-white px-4 py-3 text-sm rounded'} text={'Update Product'} />)
                                         }
@@ -447,7 +518,7 @@ export default function Products() {
                                 </div>
                             </Formik>
                             <div className="flex flex-col overflow-y-auto h-full">
-                                <div className="text-sm font-medium mb-3">Eligible Customers</div>
+                                <div className="text-sm font-medium mb-3">Eligible People</div>
                                 <MUIDataTable
                                     columns={predictionColumns}
                                     pageSize={10}
@@ -467,7 +538,12 @@ export default function Products() {
                                         <CheckBox checked={useModel} onChange={() => { setUseModel((prev) => !prev) }} />
                                     </div> */}
                                 </div>
-                                <ActionButton className={`bg-primary text-white px-4 py-3 mt-4 text-sm rounded`} noIcon text={'Find most eligible'} onClick={getEligible} />
+                                {
+                                    (loading && loadingSource == 'eligible') || selectedProduct?.processing ?
+                                        <div className={'bg-primary/70 text-white px-4 py-3 mt-4 text-center text-sm rounded'}>Processing...</div>
+                                        :
+                                        <ActionButton className={`bg-primary text-white px-4 py-3 mt-4 text-sm rounded`} noIcon text={'Find most eligible'} onClick={getEligible} />
+                                }
                             </div>
 
                         </div>
