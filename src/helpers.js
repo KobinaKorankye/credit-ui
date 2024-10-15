@@ -268,18 +268,13 @@ export function filterByDate(data, column, options = {}, isDict = false) {
   });
 }
 
-export function calculateAverageApplicants(filteredData, column, options = {}) {
-  if (filteredData.length === 0) return { message: "No data available." };
+export function calculateAverageApplicants(numOfApplications, options = {}) {
+  if (numOfApplications === 0) return { message: "No data available." };
 
   let startDate, endDate;
 
   // Determine the start and end dates based on the specified time frame
   switch (options.filterType) {
-    case 'all':
-      const dates = filteredData.map(item => parseISO(item[column]));
-      startDate = min(dates);
-      endDate = max(dates);
-      break;
     case 'today':
       startDate = startOfDay(new Date());
       endDate = endOfDay(new Date());
@@ -304,9 +299,6 @@ export function calculateAverageApplicants(filteredData, column, options = {}) {
       return { message: "Invalid or missing filterType" };
   }
 
-  // Number of applicants in the pre-filtered data
-  const totalApplications = filteredData.length;
-
   // Calculate time differences for the specified time frame
   const totalDays = differenceInDays(endDate, startDate) + 1;
   const totalWeeks = differenceInWeeks(endDate, startDate) + 1;
@@ -317,21 +309,21 @@ export function calculateAverageApplicants(filteredData, column, options = {}) {
   const result = {};
 
   // Calculate average daily applications
-  result.averageDaily = totalApplications / totalDays;
+  result.averageDaily = numOfApplications / totalDays;
 
   // Calculate average weekly applications if relevant
   if (totalWeeks > 1) {
-    result.averageWeekly = totalApplications / totalWeeks;
+    result.averageWeekly = numOfApplications / totalWeeks;
   }
 
   // Calculate average monthly applications if relevant
   if (totalMonths > 1) {
-    result.averageMonthly = totalApplications / totalMonths;
+    result.averageMonthly = numOfApplications / totalMonths;
   }
 
   // Calculate average yearly applications if relevant
   if (totalYears > 1) {
-    result.averageYearly = totalApplications / totalYears;
+    result.averageYearly = numOfApplications / totalYears;
   }
 
   // Return the appropriate message based on the filter type
@@ -361,9 +353,119 @@ export function calculateAverageApplicants(filteredData, column, options = {}) {
   return result;
 }
 
-export function getRechartsDataForPlot(filteredData, column, options) {
+// export function calculateAverageApplicants(filteredData, column, options = {}) {
+//   if (filteredData.length === 0) return { message: "No data available." };
+
+//   let startDate, endDate;
+
+//   // Determine the start and end dates based on the specified time frame
+//   switch (options.filterType) {
+//     case 'all':
+//       const dates = filteredData.map(item => parseISO(item[column]));
+//       startDate = min(dates);
+//       endDate = max(dates);
+//       break;
+//     case 'today':
+//       startDate = startOfDay(new Date());
+//       endDate = endOfDay(new Date());
+//       break;
+//     case 'week':
+//       startDate = startOfWeek(new Date(), { weekStartsOn: 1 });
+//       endDate = endOfWeek(new Date(), { weekStartsOn: 1 });
+//       break;
+//     case 'month':
+//       startDate = startOfMonth(new Date());
+//       endDate = endOfMonth(new Date());
+//       break;
+//     case 'year':
+//       startDate = startOfYear(new Date());
+//       endDate = endOfYear(new Date());
+//       break;
+//     case 'date_range':
+//       startDate = parseISO(options.startDate);
+//       endDate = parseISO(options.endDate);
+//       break;
+//     default:
+//       return { message: "Invalid or missing filterType" };
+//   }
+
+//   // Number of applicants in the pre-filtered data
+//   const totalApplications = filteredData.length;
+
+//   // Calculate time differences for the specified time frame
+//   const totalDays = differenceInDays(endDate, startDate) + 1;
+//   const totalWeeks = differenceInWeeks(endDate, startDate) + 1;
+//   const totalMonths = differenceInMonths(endDate, startDate) + 1;
+//   const totalYears = differenceInYears(endDate, startDate) + 1;
+
+//   // Initialize result object
+//   const result = {};
+
+//   // Calculate average daily applications
+//   result.averageDaily = totalApplications / totalDays;
+
+//   // Calculate average weekly applications if relevant
+//   if (totalWeeks > 1) {
+//     result.averageWeekly = totalApplications / totalWeeks;
+//   }
+
+//   // Calculate average monthly applications if relevant
+//   if (totalMonths > 1) {
+//     result.averageMonthly = totalApplications / totalMonths;
+//   }
+
+//   // Calculate average yearly applications if relevant
+//   if (totalYears > 1) {
+//     result.averageYearly = totalApplications / totalYears;
+//   }
+
+//   // Return the appropriate message based on the filter type
+//   switch (options.filterType) {
+//     case 'all':
+//       result.message = 'Average applications over the entire data range';
+//       break;
+//     case 'today':
+//       result.message = 'Average applications for today';
+//       break;
+//     case 'week':
+//       result.message = 'Average daily applications for the current week';
+//       break;
+//     case 'month':
+//       result.message = 'Average daily and weekly applications for the current month';
+//       break;
+//     case 'year':
+//       result.message = 'Average daily, weekly, monthly, and yearly applications for the current year';
+//       break;
+//     case 'date_range':
+//       result.message = 'Average applications within the specified date range';
+//       break;
+//     default:
+//       result.message = 'Invalid time frame selected';
+//   }
+
+//   return result;
+// }
+
+// export function getRechartsDataForPlot(filteredData, column, options) {
+//   // Calculate average applicants over the full range using the previously defined function
+//   const averages = calculateAverageApplicants(filteredData, column, options);
+
+//   // Initialize Recharts data structure with 0s for all time frames
+//   const rechartsData = [
+//     { name: 'Daily Average', value: averages.averageDaily || 0, color: themePalette.alt },
+//     { name: 'Weekly Average', value: averages.averageWeekly || 0, color: themePalette.primary },
+//     { name: 'Monthly Average', value: averages.averageMonthly || 0, color: themePalette.secondary },
+//     { name: 'Yearly Average', value: averages.averageYearly || 0, color: themePalette['surface-light'] }
+//   ];
+
+//   // Logic to determine which values to plot
+//   // If date range spans less than a week, set weekly, monthly, and yearly to 0
+
+//   return rechartsData;
+// }
+export function getRechartsDataForPlot(numOfApplications, options) {
   // Calculate average applicants over the full range using the previously defined function
-  const averages = calculateAverageApplicants(filteredData, column, options);
+  const averages = calculateAverageApplicants(numOfApplications, options);
 
   // Initialize Recharts data structure with 0s for all time frames
   const rechartsData = [

@@ -230,7 +230,7 @@ export default function Analysis() {
                           showInfo
                           highlightPoint={modelBody[numColumn]}
                           columnArray={[...data[numColumn], modelBody[numColumn]]}
-                          classArray={[...data["class"], getPredClass(response)]}
+                          classArray={[...(data["class"] || data["class_"]), getPredClass(response)]}
                         />
                       </>
                     )}
@@ -279,7 +279,7 @@ export default function Analysis() {
                           ...data[catColumn],
                           mappings[modelBody[catColumn]],
                         ]}
-                        classArray={[...data["class"], getPredClass(response)]}
+                        classArray={[...(data["class"] || data["class_"]), getPredClass(response)]}
                         columnTitle={catColumn}
                       />
                     </div>

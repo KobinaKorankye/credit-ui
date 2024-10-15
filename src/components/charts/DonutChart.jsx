@@ -21,11 +21,11 @@ const DonutChart = ({ data, showRatio, ratioIndexToShow, legendComponent: Custom
 
     const getRatioToShow = () => {
         let total = 0
-        data.forEach((d) => {
+        data?.forEach((d) => {
             total += d.value
         })
 
-        return (data[ratioIndexToShow].value)/total
+        return data ? (data[ratioIndexToShow]?.value) / total : 0
     }
 
     return (
@@ -50,7 +50,7 @@ const DonutChart = ({ data, showRatio, ratioIndexToShow, legendComponent: Custom
                         labelLine={false}
                         label={renderCustomizedLabel} // Custom label function
                     >
-                        {data.map((entry, index) => (
+                        {data?.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                     </Pie>
@@ -58,7 +58,7 @@ const DonutChart = ({ data, showRatio, ratioIndexToShow, legendComponent: Custom
                 </PieChart>
             </ResponsiveContainer>
             <div className='flex flex-col gap-1 mt-2'>
-                {data.map((item,index) => (
+                {data?.map((item, index) => (
                     <CustomLegend index={index} {...item} key={item.name} />
                 ))}
             </div>

@@ -39,6 +39,14 @@ export default function Dashboard() {
   const [loans, setLoans] = useState([]);
   const [gapplicants, setGApplicants] = useState([]);
 
+  const [activeFilter, setActiveFilter] = useState('date_range')
+  const [activeFilterStartDate, setActiveFilterStartDate] = useState('2020-07-01')
+  const [activeFilterEndDate, setActiveFilterEndDate] = useState(format(new Date(), "yyyy-MM-dd"))
+  const [startDate, setStartDate] = useState('2020-07-01')
+  const [endDate, setEndDate] = useState(format(new Date(), "yyyy-MM-dd"))
+  const [filter, setFilter] = useState('date_range')
+  const [dashboardData, setDashboardData] = useState({})
+
 
   const getPrediction = async (row) => {
     const body = transformModelApiObject(row);
@@ -113,6 +121,28 @@ export default function Dashboard() {
     setLoading(false);
   };
 
+  const getDashboardData = async () => {
+    setLoading(true);
+    try {
+      const { data } = await client.get(`/fx/dashboard-data?filterType=${filter}${filter == 'date_range' ? `&startDate=${startDate}&endDate=${endDate}` : filter == 'date' ? `&date=${startDate}` : ''}`);
+      toast.success("Loaded Successfully", {
+        position: "top-left",
+      });
+      setDashboardData(data);
+
+      setActiveFilter(filter)
+      setActiveFilterStartDate(startDate)
+      setActiveFilterEndDate(endDate)
+
+    } catch (error) {
+      toast.error("Failed to load dashboard data", {
+        position: "top-left",
+      });
+      console.log(error);
+    }
+    setLoading(false);
+  };
+
   const getGApplicants = async () => {
     setLoading(true);
     try {
@@ -168,12 +198,10 @@ export default function Dashboard() {
     },
   ];
 
-  const [startDate, setStartDate] = useState('2020-07-01')
-  const [endDate, setEndDate] = useState(format(new Date(), "yyyy-MM-dd"))
-  const [filter, setFilter] = useState('date_range')
+
 
   const options = [
-    { value: 'all', label: 'All' },
+    // { value: 'all', label: 'All' },
     { value: 'today', label: 'Today' },
     { value: 'week', label: 'This Week' },
     { value: 'month', label: 'This Month' },
@@ -207,8 +235,8 @@ export default function Dashboard() {
     getLoanees();
     getGApplicants();
     getLoans();
+    getDashboardData();
   }, []);
-
 
   return (
     <SideNavLayout>
@@ -228,20 +256,20 @@ export default function Dashboard() {
         <div className={`flex items-end overflow-hidden duration-200 transition-all h-[4.5rem] border-t border-gray-400 mt-4`}>
           <RegularInputAlt type="date" disabled={!["date", "date_range"].includes(filter)} boxClassName="w-[11vw]" onChange={(e) => setStartDate(e.target.value)} value={startDate} name="sdt" label={["date", "today"].includes(filter) ? "Date" : "Start Date"} />
           {
-            !["date", "today"].includes(filter) && <RegularInputAlt type="date" disabled={!["date", "date_range"].includes(filter)} boxClassName="w-[11vw] ml-4" onChange={(e) => setEndDate(e.target.value)} value={endDate} name="edt" label={"End Date"} />
+            !["date", "today"].includes(filter) &&
+            <RegularInputAlt type="date" disabled={!["date", "date_range"].includes(filter)} boxClassName="w-[11vw] ml-4" onChange={(e) => setEndDate(e.target.value)} value={endDate} name="edt" label={"End Date"} />
+          }
+          {
+            ((activeFilterStartDate != startDate) || (activeFilterEndDate != endDate) || (activeFilter != filter)) &&
+            <div onClick={() => {
+              getDashboardData();
+            }}
+              className="flex cursor-pointer justify-center items-center ml-20 text-xs tracking-wider font-[600] rounded-lg hover:bg-surface-light duration-200 px-[1rem] py-[0.5rem] text-white bg-surface"
+            >
+              Filter
+            </div>
           }
           {/* <div onClick={() => {
-            if (filter === "date") {
-              // getTransactionsSummary(startDate, startDate)
-            } else {
-              // getTransactionsSummary(startDate, endDate)
-            }
-          }}
-            className="flex cursor-pointer justify-center items-center ml-20 text-xs tracking-wider font-[600] rounded bg-surface px-[1rem] py-[0.6rem] text-white"
-          >
-            Search
-          </div>
-          <div onClick={() => {
             // getTransactionsSummary('2020-07-01', format(new Date(), "yyyy-MM-dd")); setStartDate('2020-07-01'); setEndDate(format(new Date(), "yyyy-MM-dd")) 
           }}
             className="flex cursor-pointer justify-center items-center ml-4 text-xs tracking-wider font-[600] dark:font-[600] rounded bg-accent/60 px-[1rem] py-[0.6rem] text-black"
@@ -262,20 +290,20 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-8 gap-4 mt-4">
         <div className="col-span-4 grid grid-cols-2 gap-4">
-          <StatCard title={'Number of Applications'} statClassName={'text-2xl text-gray-500'} className={'border border-gray-400'} noColor icon={LuUser} stat={filteredLoanees.length + filteredGApplicants.length} />
-          <StatCard title={'Approved Applications'} className={''} alt icon={() => <LuUserCheck className="text-primary/50" />} stat={filteredLoanees.length} />
-          <StatCard title={'Pending Applications'} className={''} alt option={2} icon={() => <LuUserCog className="text-accent/50" />} stat={filteredGApplicants.filter((g) => g.status === "pending").length} />
-          <StatCard title={'Rejected Applications'} className={''} icon={() => <LuUserX className="text-secondary/50" />} stat={filteredGApplicants.filter((g) => g.status === "rejected").length} />
+          <StatCard title={'Number of Applications'} statClassName={'text-2xl text-gray-500'} className={'border border-gray-400'} noColor icon={LuUser} stat={dashboardData?.application_stats?.total} />
+          <StatCard title={'Approved Applications'} className={''} alt icon={() => <LuUserCheck className="text-primary/50" />} stat={dashboardData?.application_stats?.approved} />
+          <StatCard title={'Pending Applications'} className={''} alt option={2} icon={() => <LuUserCog className="text-accent/50" />} stat={dashboardData?.application_stats?.pending} />
+          <StatCard title={'Rejected Applications'} className={''} icon={() => <LuUserX className="text-secondary/50" />} stat={dashboardData?.application_stats?.rejected} />
         </div>
         <Card title={'Average Number of Applications'} titleClassName={'text-gray-700'} className={'col-span-4'}>
           <div className="pt-5 mt-1 w-full">
-            <BarGraph grid height={200} data={getRechartsDataForPlot(filteredGApplicants, "date_created", { filterType: filter, startDate, endDate, date: startDate })} />
+            <BarGraph grid height={200} data={getRechartsDataForPlot(dashboardData?.application_stats?.total, { filterType: activeFilter, startDate: activeFilterStartDate, endDate: activeFilterEndDate, date: activeFilterStartDate })} />
           </div>
         </Card>
       </div>
       <div className="grid grid-cols-8 gap-4 mt-4">
         <Card title={'NPL Ratio'} className={'col-span-2'}>
-          <DonutChart legendComponent={CurrencyLegend} showRatio ratioIndexToShow={0} data={getNPLDonutData(filteredLoanees)} />
+          <DonutChart legendComponent={CurrencyLegend} showRatio ratioIndexToShow={0} data={dashboardData?.loan_stats?.npl_donut} />
         </Card>
         <Card title={'Credit Distribution'} className={'col-span-4'}>
           {/* <div className="pt-5 mt-1 w-full bg-gray-100 shadow-lg"> */}
@@ -290,7 +318,7 @@ export default function Dashboard() {
           /> */}
         </Card>
         <Card title={'Default Rate'} className={'col-span-2'}>
-          <DonutChart showRatio ratioIndexToShow={0} data={getDefaultRateData(filteredLoanees)} />
+          <DonutChart showRatio ratioIndexToShow={0} data={dashboardData?.loan_stats?.default_rate} />
         </Card>
       </div>
       <div className="grid grid-cols-5 gap-4 mt-4">
@@ -305,7 +333,7 @@ export default function Dashboard() {
                   <div className="text-sm font-semibold text-dark w-full flex items-center">
                     <div className={`text-gray-500 uppercase`}>Total</div>
                   </div>
-                  <div className={'text-4xl text-right font-medium text-surface-light'}>GH₵{numeral(getTotalOfColumn(filteredLoanees, "credit_amount")).format("0,0.00")}</div>
+                  <div className={'text-4xl text-right font-medium text-surface-light'}>GH₵{numeral(dashboardData?.loan_stats?.summary?.total).format("0,0.00")}</div>
                 </div>
               </div>
               <div className="flex-1 grid grid-cols-3 gap-4 mt-4 items-center justify-between">
@@ -313,19 +341,19 @@ export default function Dashboard() {
                   <div className="text-sm font-semibold text-dark w-full flex items-center">
                     <div className={`text-gray-500 uppercase`}>Min</div>
                   </div>
-                  <div className={'text-2xl font-medium text-gray-600'}>GH₵{numeral(Math.min(...loaneeCreditAmounts)).format("0,0.00")}</div>
+                  <div className={'text-2xl font-medium text-gray-600'}>GH₵{numeral(dashboardData?.loan_stats?.summary?.min).format("0,0.00")}</div>
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-dark w-full flex items-center">
                     <div className={`text-gray-500 uppercase`}>Avg</div>
                   </div>
-                  <div className={'text-2xl font-medium text-gray-600'}>GH₵{numeral(loaneeCreditAmounts.reduce((sum, value) => sum + value, 0) / loaneeCreditAmounts.length).format("0,0.00")}</div>
+                  <div className={'text-2xl font-medium text-gray-600'}>GH₵{numeral(dashboardData?.loan_stats?.summary?.avg).format("0,0.00")}</div>
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-dark w-full flex items-center">
                     <div className={`text-gray-500 uppercase`}>Max</div>
                   </div>
-                  <div className={'text-2xl font-medium text-gray-600'}>GH₵{numeral(Math.max(...filteredLoanees.map((l) => l.credit_amount))).format("0,0.00")}</div>
+                  <div className={'text-2xl font-medium text-gray-600'}>GH₵{numeral(dashboardData?.loan_stats?.summary?.max).format("0,0.00")}</div>
                 </div>
               </div>
             </div>

@@ -224,11 +224,35 @@ export default function Products() {
             toast.error("Failed to start processing", {
                 position: "top-left",
             });
-            setLoading(false);
             setSelectedProduct({ ...selectedProduct, processing: false })
             setProducts(products.map((prod) => selectedProduct.id === prod.id ? { ...prod, processing: false } : prod))
             console.error(error);
         }
+
+        setLoading(false);
+    };
+
+    const contactEligible = async () => {
+        setLoading(true);
+        setLoadingSource("contact");
+        try {
+            // Start the Celery task
+            const { data } = await client.get(`/fx/contact-eligible/${selectedProduct.id}`);
+            // setTaskId(data.task_id); // Set the taskId in state to trigger the useEffect
+            toast.success("Messages sent", {
+                position: "top-left",
+            });
+
+        } catch (error) {
+            toast.error("Failed to start processing", {
+                position: "top-left",
+            });
+            setSelectedProduct({ ...selectedProduct, processing: false })
+            setProducts(products.map((prod) => selectedProduct.id === prod.id ? { ...prod, processing: false } : prod))
+            console.error(error);
+        }
+
+        setLoading(false);
     };
 
     // const getEligible = async () => {
@@ -279,7 +303,7 @@ export default function Products() {
             const { status } = JSON.parse(event.data);
 
             console.log(event)
-            
+
             if (status === 'SUCCESS') {
                 // Fetch updated product data when processing is complete
                 getProducts();
@@ -518,7 +542,17 @@ export default function Products() {
                                 </div>
                             </Formik>
                             <div className="flex flex-col overflow-y-auto h-full">
-                                <div className="text-sm font-medium mb-3">Eligible People</div>
+                                <div className="flex justify-between mb-4">
+                                    <div className="text-sm font-medium">Eligible People</div>
+                                    {
+                                        selectedProduct?.eligible_customers?.length &&
+                                            (loading && loadingSource == 'contact') ?
+                                            <div className={'bg-surface-light/70 text-white px-3 py-2 text-center text-sm rounded'}>Sending...</div>
+                                            :
+                                            <ActionButton className={`bg-surface-light text-white px-3 py-2 rounded`} noIcon text={'Send offer messages'} onClick={contactEligible} />
+                                    }
+                                </div>
+
                                 <MUIDataTable
                                     columns={predictionColumns}
                                     pageSize={10}
