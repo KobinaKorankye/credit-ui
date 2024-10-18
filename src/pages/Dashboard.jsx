@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import SideNavLayout from "../layouts/SideNavLayout";
 import Button from "../components/Button";
 import { useNavigate } from "react-router-dom";
@@ -24,12 +24,29 @@ import RegularInput from "../components/RegularInput";
 import RegularSelectAlt from "../components/RegularSelectAlt";
 import RegularInputAlt from "../components/RegularInputAlt";
 import SummaryCard from "../components/SummaryCard";
-import { BiCoin, BiCoinStack, BiLoaderCircle } from 'react-icons/bi';
+import { BiCoin, BiCoinStack, BiLoaderCircle, BiPlusCircle } from 'react-icons/bi';
 import { LuUser, LuUserCheck, LuUserCog, LuUserMinus, LuUsers2, LuUserX } from "react-icons/lu";
 import StatCard from "../components/StatCard";
 import { FaUserClock } from "react-icons/fa";
 import numeral from "numeral";
 import BarGraph from "../components/charts/BarGraph";
+import { themePalette } from "../../themePalette";
+import { Tooltip } from "react-tooltip";
+import Modal from "../components/modals/Modal";
+import Modal2 from "../components/modals/Modal2";
+import { FiX } from 'react-icons/fi'
+import * as Yup from 'yup'
+import { Formik } from "formik";
+import FormInput from "../components/formik/FormInput";
+import Submit from "../components/formik/Submit";
+
+const dashStatsSchema = Yup.object().shape({
+  name: Yup.string()
+    .required()
+    .label("Name"),
+  start_date: Yup.string().required().label("Start date"),
+  end_date: Yup.string().required().label("End date"),
+})
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -39,13 +56,27 @@ export default function Dashboard() {
   const [loans, setLoans] = useState([]);
   const [gapplicants, setGApplicants] = useState([]);
 
-  const [activeFilter, setActiveFilter] = useState('date_range')
+  const [activeFilter, setActiveFilter] = useState('year')
   const [activeFilterStartDate, setActiveFilterStartDate] = useState('2020-07-01')
   const [activeFilterEndDate, setActiveFilterEndDate] = useState(format(new Date(), "yyyy-MM-dd"))
   const [startDate, setStartDate] = useState('2020-07-01')
   const [endDate, setEndDate] = useState(format(new Date(), "yyyy-MM-dd"))
-  const [filter, setFilter] = useState('date_range')
+  const [filter, setFilter] = useState('year')
   const [dashboardData, setDashboardData] = useState({})
+  const [customFilters, setCustomFilters] = useState([])
+
+  const [showCustomFIlterCreationModal, setShowCustomFIlterCreationModal] = useState(false)
+  const [taskId, setTaskId] = useState(null);
+  const eventSourceRef = useRef(null);
+
+
+  console.log("Active Filter:", activeFilter);
+  console.log("Active Filter Start Date:", activeFilterStartDate);
+  console.log("Active Filter End Date:", activeFilterEndDate);
+  console.log("Start Date:", startDate);
+  console.log("End Date:", endDate);
+  console.log("Filter:", filter);
+  console.log("Dashboard Data:", dashboardData);
 
 
   const getPrediction = async (row) => {
@@ -125,9 +156,9 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const { data } = await client.get(`/fx/dashboard-data?filterType=${filter}${filter == 'date_range' ? `&startDate=${startDate}&endDate=${endDate}` : filter == 'date' ? `&date=${startDate}` : ''}`);
-      toast.success("Loaded Successfully", {
-        position: "top-left",
-      });
+      // toast.success("Loaded Successfully", {
+      //   position: "top-left",
+      // });
       setDashboardData(data);
 
       setActiveFilter(filter)
@@ -143,14 +174,34 @@ export default function Dashboard() {
     setLoading(false);
   };
 
-  const getGApplicants = async () => {
+  const getCustomFilters = async () => {
     setLoading(true);
     try {
-      const { data } = await client.get("/gapplicants");
-      //   toast.success("Loaded Successfully", {
-      //     position: "top-left",
-      //   });
-      setGApplicants(data.reverse());
+      const { data } = await client.get(`/dash-stats`);
+      // toast.success("Custom Filters Loaded", {
+      //   position: "top-left",
+      // });
+      setCustomFilters(data);
+
+    } catch (error) {
+      toast.error("Failed to load custom filters", {
+        position: "top-left",
+      });
+      console.log(error);
+    }
+    setLoading(false);
+  };
+
+  const createCustomFilter = async (form) => {
+    setLoading(true);
+    try {
+      const { data } = await client.post("/fx/create-dash-stats", form);
+
+      setTaskId(data.task_id);
+      toast.info(`Creating custom filter: ${form.name}`, {
+        position: "top-left",
+      });
+      setShowCustomFIlterCreationModal(false)
     } catch (error) {
       toast.error("Failed", {
         position: "top-left",
@@ -159,6 +210,50 @@ export default function Dashboard() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (!taskId) return;
+
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+
+    // Create a new EventSource to listen for task updates
+    const eventSource = new EventSource(`http://localhost:8000/fx/task-status/${taskId}`);
+    eventSourceRef.current = eventSource;
+
+    eventSource.onmessage = (event) => {
+      const { status } = JSON.parse(event.data);
+
+      console.log(event)
+
+      if (status === 'SUCCESS') {
+        // Fetch updated product data when processing is complete
+        toast.success("Custom filter ready", {
+          position: "top-left",
+        });
+        getCustomFilters();
+        setLoading(false);
+        eventSource.close(); // Close the EventSource when processing is complete
+        setTaskId(null); // Reset taskId
+      } else if (status === 'FAILURE') {
+        toast.error("Custom filter creation failed", {
+          position: "top-left",
+        });
+        getCustomFilters();
+        setLoading(false);
+        eventSource.close(); // Close the EventSource on failure
+        setTaskId(null); // Reset taskId
+      }
+    };
+
+    return () => {
+      // Clean up EventSource if the component unmounts or taskId changes
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, [taskId]);
 
   const classes = ["Defaulted", "Repaid"];
 
@@ -198,8 +293,6 @@ export default function Dashboard() {
     },
   ];
 
-
-
   const options = [
     // { value: 'all', label: 'All' },
     { value: 'today', label: 'Today' },
@@ -207,25 +300,21 @@ export default function Dashboard() {
     { value: 'month', label: 'This Month' },
     { value: 'year', label: 'This Year' },
     { value: 'date', label: 'Date' },
-    { value: 'date_range', label: 'Date Range' },
+    // { value: 'date_range', label: 'Date Range' },
   ];
 
   const filteredLoanees = filterByDate(users, "date_created", { filterType: filter, startDate, endDate, date: startDate })
-  const filteredGApplicants = filterByDate(gapplicants, "date_updated", { filterType: filter, startDate, endDate, date: startDate })
+  // const filteredGApplicants = filterByDate(gapplicants, "date_updated", { filterType: filter, startDate, endDate, date: startDate })
 
-  const loaneeCreditAmounts = filteredLoanees.map((l) => l.credit_amount);
+  // const loaneeCreditAmounts = filteredLoanees.map((l) => l.credit_amount);
 
   useEffect(() => {
-    if (!["date", "date_range", "all"].includes(filter)) {
+    if (["today", "week", "month", "year"].includes(filter)) {
       console.log("Filter: ", filter)
       const { startDate, endDate } = dateRangeStartAndEnd(filter)
       setStartDate(startDate)
       setEndDate(endDate)
-    } else if (filter === "all") {
-      const dates = filteredLoanees.map(item => parseISO(item["date_created"]));
-      setStartDate(format(min(dates), 'yyyy-MM-dd'));
-      setEndDate(format(max(dates), 'yyyy-MM-dd'),);
-    } else {
+    } else if (["date"].includes(filter)) {
       setStartDate('2020-07-01')
       setEndDate(format(new Date(), "yyyy-MM-dd"))
     }
@@ -233,18 +322,87 @@ export default function Dashboard() {
 
   useEffect(() => {
     getLoanees();
-    getGApplicants();
     getLoans();
     getDashboardData();
+    getCustomFilters();
   }, []);
 
   return (
     <SideNavLayout>
+      {/* <Modal2 isOpen={isCustomerDetailModalOpen}>
+        <div onClick={() => { setIsCustomerDetailModalOpen(false) }} className="w-screen h-screen flex flex-col items-center p-20 items-center bg-black/50">
+          <div onClick={(e) => { e.stopPropagation() }} className="max-w-full max-h-full overflow-y-auto bg-white px-14 pt-5 pb-10 rounded">
+            <div className="flex justify-end"> <FiX className="text-lg cursor-pointer" onClick={() => { setIsCustomerDetailModalOpen(false) }} /></div>
+            <div className="text-xl font-semibold mb-10">Customer Details</div>
+            <div className="flex gap-3">
+              <div className="font-semibold">customer?:</div>
+              <div className="">{selectedCustomer?.customer ? 'True' : 'False'}</div>
+            </div>
+            {selectedCustomer &&
+              Object.entries(getApplicantInfoField(selectedCustomer)).map(([key, value]) => (
+                <div className="flex gap-3">
+                  <div className="font-semibold">{key}:</div>
+                  <div className="">{value}</div>
+                </div>
+              ))
+            }
+            {selectedCustomer &&
+              Object.entries(selectedCustomer).map(([key, value]) => {
+                if (["nc_info", "customer", "id"].includes(key)) {
+                  return null
+                }
+                return (
+                  <div className="flex gap-3">
+                    <div className="font-semibold">{key}:</div>
+                    <div className="">{value}</div>
+                  </div>
+                )
+              })
+            }
+
+          </div>
+        </div>
+      </Modal2> */}
+      <Modal isOpen={showCustomFIlterCreationModal}>
+        <div onClick={() => { setShowCustomFIlterCreationModal(false) }} className="w-screen h-screen overflow-y-auto flex flex-col p-10 items-center bg-black/50">
+          <div onClick={(e) => { e.stopPropagation() }} className="flex flex-col bg-white px-14 pt-5 pb-10 rounded">
+            <div className="flex justify-end"> <FiX className="text-lg cursor-pointer" onClick={() => { setShowCustomFIlterCreationModal(false) }} /></div>
+            <div className="text-xl font-semibold">Create Custom Filter</div>
+            <div className="flex-1 w-full">
+              <Formik
+                initialValues={{ name: '', start_date: '', end_date: '' }}
+                validationSchema={dashStatsSchema}
+                onSubmit={createCustomFilter}
+              >
+                <div>
+                  <div className="flex flex-col mt-10">
+                    <div className="grid grid-cols-3 gap-x-5 gap-y-8">
+                      <FormInput name={'name'} type={'text'} label={'Product name'} placeholder="Custom filter name" />
+                      <FormInput name={'start_date'} type={'date'} label={'Start date'} />
+                      <FormInput name={'end_date'} type={'date'} label={'End date'} />
+                    </div>
+                  </div>
+
+                  <div className="flex w-full justify-between mt-8">
+                    {
+                      ((loading) ?
+                        <div className={'bg-surface-light/70 text-white px-4 py-3 text-center text-sm rounded'}>Loading...</div>
+                        :
+                        <Submit className={'bg-surface-light text-white px-4 py-3 text-sm rounded'} text={'Submit'} />)
+                    }
+                  </div>
+                </div>
+              </Formik>
+
+            </div>
+          </div>
+        </div>
+      </Modal>
       <Card title={'Filters'} alt className={`border border-accent`}>
         {/* <div className="flex items-end mt-2">
           <RegularSelectAlt boxClassName="w-[11vw]" onChange={(e) => setFilter(e.target.value)} value={filter} name="filter" label="Filter By" options={options} />
         </div> */}
-        <div className="flex gap-4 w-full mt-4">
+        <div className="flex gap-4 w-full mt-4 items-center overflow-x-auto">
           {
             options.map((option, index) => (
               <div key={index} className={`${option.value === filter ? 'text-white bg-surface' : 'bg-white border border-gray-700'} cursor-pointer px-4 py-1 rounded-full text-xs`} onClick={(e) => setFilter(option.value)}>
@@ -252,6 +410,23 @@ export default function Dashboard() {
               </div>
             ))
           }
+          {
+            customFilters.map(({ name, start_date, end_date, stats, processing }, index) => (
+              <div key={index} className={`${processing ? 'text-white bg-gray-400' : (name === filter ? 'text-white bg-primary' : 'bg-white text-primary border border-primary')} cursor-pointer px-4 py-1 rounded-full text-xs`}
+                onClick={(e) => {
+                  if (processing) return;
+                  setFilter(name); setActiveFilter(name); setStartDate(start_date); setEndDate(end_date); setActiveFilterStartDate(start_date); setActiveFilterEndDate(end_date); setDashboardData(stats)
+                }}>
+                {name}
+              </div>
+            ))
+          }
+
+          <div onClick={() => setShowCustomFIlterCreationModal(true)} data-tooltip-id="add-stats" className="cursor-pointer">
+            <BiPlusCircle size={25} color={themePalette.primary} />
+          </div>
+          <Tooltip variant="light" id="add-stats" place="right">Add custom filter</Tooltip>
+
         </div>
         <div className={`flex items-end overflow-hidden duration-200 transition-all h-[4.5rem] border-t border-gray-400 mt-4`}>
           <RegularInputAlt type="date" disabled={!["date", "date_range"].includes(filter)} boxClassName="w-[11vw]" onChange={(e) => setStartDate(e.target.value)} value={startDate} name="sdt" label={["date", "today"].includes(filter) ? "Date" : "Start Date"} />
@@ -260,7 +435,7 @@ export default function Dashboard() {
             <RegularInputAlt type="date" disabled={!["date", "date_range"].includes(filter)} boxClassName="w-[11vw] ml-4" onChange={(e) => setEndDate(e.target.value)} value={endDate} name="edt" label={"End Date"} />
           }
           {
-            ((activeFilterStartDate != startDate) || (activeFilterEndDate != endDate) || (activeFilter != filter)) &&
+            (((activeFilterStartDate != startDate) || (activeFilterEndDate != endDate) || (activeFilter != filter)) && options.map((option) => option.value).includes(filter)) &&
             <div onClick={() => {
               getDashboardData();
             }}

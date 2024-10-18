@@ -268,10 +268,10 @@ export default function ApplicantAnalysis() {
                         title={COLUMN_LABELS[catColumn]}
                         highlightPoint={mappings[modelBody[catColumn]]}
                         columnArray={[
-                          ...data[catColumn],
+                          ...(data[catColumn].map((val) => mappings[val])),
                           mappings[modelBody[catColumn]],
                         ]}
-                        classArray={[...data["class"], getPredClass(response)]}
+                        classArray={[...(data["class"] || data["class_"]), getPredClass(response)]}
                         columnTitle={catColumn}
                       />
                     </div>

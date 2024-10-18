@@ -67,8 +67,8 @@ export const getTotalOfColumn = (filteredData, columnName) => {
   return total
 }
 
-export const getApplicantInfoField = (row) =>{
-  return row.customer? row.customer: row.nc_info
+export const getApplicantInfoField = (row) => {
+  return row.customer ? row.customer : row.nc_info
 }
 
 export function transformApplicationToModelApiObject(input) {
@@ -261,6 +261,17 @@ export function filterByDate(data, column, options = {}, isDict = false) {
             start: startOfDay(parsedStartDate),
             end: endOfDay(parsedEndDate),
           });
+
+        default:
+          // const parsedStartDate_ = parseISO(startDate);
+          // const parsedEndDate_ = parseISO(endDate);
+
+          // return isWithinInterval(itemDate, {
+          //   start: startOfDay(parsedStartDate_),
+          //   end: endOfDay(parsedEndDate_),
+          // });
+
+          return true
       }
     }
 
@@ -296,7 +307,9 @@ export function calculateAverageApplicants(numOfApplications, options = {}) {
       endDate = parseISO(options.endDate);
       break;
     default:
-      return { message: "Invalid or missing filterType" };
+      startDate = parseISO(options.startDate);
+      endDate = parseISO(options.endDate);
+      break;
   }
 
   // Calculate time differences for the specified time frame
@@ -542,14 +555,43 @@ export function evaluateFilter(filter, data) {
 
 export function filterToString(filter) {
   if (filter.and) {
+    // For 'and', join each condition with 'and'
+    return '(' + filter.and.map(f => filterToString(f)).join(' and ') + ')';
+  } else if (filter.or) {
+    // For 'or', join each condition with 'or'
+    return '(' + filter.or.map(f => filterToString(f)).join(' or ') + ')';
+  } else if (filter.not) {
+    // For 'not', prefix the condition with 'not'
+    return 'not (' + filterToString(filter.not[0]) + ')';
+  } else {
+    // For single conditions, construct the comparison string
+    const { attribute, operation, operand } = filter;
+
+    let opString;
+    switch (operation) {
+      case 'eq': opString = 'is equal to'; break;
+      case 'neq': opString = 'is not equal to'; break;
+      case 'lt': opString = 'is less than'; break;
+      case 'lte': opString = 'is less than or equal to'; break;
+      case 'gt': opString = 'is greater than'; break;
+      case 'gte': opString = 'is greater than or equal to'; break;
+      default: opString = `has operation ${operation}`; // Fallback for unknown operations
+    }
+
+    return `${attribute} ${opString} ${operand}`;
+  }
+}
+
+export function filterToMathString(filter) {
+  if (filter.and) {
     // For 'and', join each condition with 'AND'
-    return '(' + filter.and.map(f => filterToString(f)).join(' AND ') + ')';
+    return '(' + filter.and.map(f => filterToMathString(f)).join(' AND ') + ')';
   } else if (filter.or) {
     // For 'or', join each condition with 'OR'
-    return '(' + filter.or.map(f => filterToString(f)).join(' OR ') + ')';
+    return '(' + filter.or.map(f => filterToMathString(f)).join(' OR ') + ')';
   } else if (filter.not) {
     // For 'not', prefix the condition with 'NOT'
-    return 'NOT (' + filterToString(filter.not[0]) + ')';
+    return 'NOT (' + filterToMathString(filter.not[0]) + ')';
   } else {
     // For single conditions, construct the comparison string
     const { attribute, operation, operand } = filter;
