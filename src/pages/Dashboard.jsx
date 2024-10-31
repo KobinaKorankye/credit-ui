@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useContext } from "react";
 import SideNavLayout from "../layouts/SideNavLayout";
 import Button from "../components/Button";
 import { useNavigate } from "react-router-dom";
@@ -39,6 +39,7 @@ import * as Yup from 'yup'
 import { Formik } from "formik";
 import FormInput from "../components/formik/FormInput";
 import Submit from "../components/formik/Submit";
+import UserContext from "../contexts/UserContext";
 
 const dashStatsSchema = Yup.object().shape({
   name: Yup.string()
@@ -64,19 +65,19 @@ export default function Dashboard() {
   const [filter, setFilter] = useState('year')
   const [dashboardData, setDashboardData] = useState({})
   const [customFilters, setCustomFilters] = useState([])
-
+  const { user } = useContext(UserContext)
   const [showCustomFIlterCreationModal, setShowCustomFIlterCreationModal] = useState(false)
   const [taskId, setTaskId] = useState(null);
   const eventSourceRef = useRef(null);
 
-
-  console.log("Active Filter:", activeFilter);
-  console.log("Active Filter Start Date:", activeFilterStartDate);
-  console.log("Active Filter End Date:", activeFilterEndDate);
-  console.log("Start Date:", startDate);
-  console.log("End Date:", endDate);
-  console.log("Filter:", filter);
-  console.log("Dashboard Data:", dashboardData);
+  console.log("Context", user)
+  // console.log("Active Filter:", activeFilter);
+  // console.log("Active Filter Start Date:", activeFilterStartDate);
+  // console.log("Active Filter End Date:", activeFilterEndDate);
+  // console.log("Start Date:", startDate);
+  // console.log("End Date:", endDate);
+  // console.log("Filter:", filter);
+  // console.log("Dashboard Data:", dashboardData);
 
 
   const getPrediction = async (row) => {
@@ -138,11 +139,12 @@ export default function Dashboard() {
   const getLoans = async () => {
     setLoading(true);
     try {
-      const { data } = await client.get("/loans");
+      const { data } = await client.get("/loans?outcome=completed");
       // toast.success("Loaded Successfully", {
       //   position: "top-left",
       // });
       setLoans(data);
+      console.log("Loans: ", data)
     } catch (error) {
       toast.error("Failed", {
         position: "top-left",
@@ -303,7 +305,7 @@ export default function Dashboard() {
     // { value: 'date_range', label: 'Date Range' },
   ];
 
-  const filteredLoanees = filterByDate(users, "date_created", { filterType: filter, startDate, endDate, date: startDate })
+  const filteredLoanees = filterByDate(loans, "date_updated", { filterType: filter, startDate, endDate, date: startDate })
   // const filteredGApplicants = filterByDate(gapplicants, "date_updated", { filterType: filter, startDate, endDate, date: startDate })
 
   // const loaneeCreditAmounts = filteredLoanees.map((l) => l.credit_amount);
@@ -410,7 +412,7 @@ export default function Dashboard() {
               </div>
             ))
           }
-          {
+          {/* {
             customFilters.map(({ name, start_date, end_date, stats, processing }, index) => (
               <div key={index} className={`${processing ? 'text-white bg-gray-400' : (name === filter ? 'text-white bg-primary' : 'bg-white text-primary border border-primary')} cursor-pointer px-4 py-1 rounded-full text-xs`}
                 onClick={(e) => {
@@ -420,12 +422,12 @@ export default function Dashboard() {
                 {name}
               </div>
             ))
-          }
+          } */}
 
-          <div onClick={() => setShowCustomFIlterCreationModal(true)} data-tooltip-id="add-stats" className="cursor-pointer">
+          {/* <div onClick={() => setShowCustomFIlterCreationModal(true)} data-tooltip-id="add-stats" className="cursor-pointer">
             <BiPlusCircle size={25} color={themePalette.primary} />
           </div>
-          <Tooltip variant="light" id="add-stats" place="right">Add custom filter</Tooltip>
+          <Tooltip variant="light" id="add-stats" place="right">Add custom filter</Tooltip> */}
 
         </div>
         <div className={`flex items-end overflow-hidden duration-200 transition-all h-[4.5rem] border-t border-gray-400 mt-4`}>
@@ -482,7 +484,7 @@ export default function Dashboard() {
         </Card>
         <Card title={'Credit Distribution'} className={'col-span-4'}>
           {/* <div className="pt-5 mt-1 w-full bg-gray-100 shadow-lg"> */}
-          <ProbDensityChart hideY data={getKDEData(filteredLoanees, 'credit_amount')} />
+          <ProbDensityChart hideY data={getKDEData(filteredLoanees, 'loan_amount')} />
           {/* </div> */}
           {/* <KDEChart
             title={COLUMN_LABELS["credit_amount"]}

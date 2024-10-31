@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { toast } from "react-toastify";
 import Table from "../components/Table";
 import SideNavLayout from "../layouts/SideNavLayout";
@@ -11,6 +11,8 @@ import Loader from "../loader/Loader";
 import SearchBar from "../components/SearchBar";
 import ActionButton from "../components/ActionButton";
 import Modal from "../components/modals/Modal";
+import { capitalize } from "@mui/material";
+import UserContext from "../contexts/UserContext";
 
 const columns = [
   { field: "id", headerName: "ID", width: 100 },
@@ -53,19 +55,22 @@ const columns = [
 export default function Applicants() {
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { user } = useContext(UserContext)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [response, setResponse] = useState({});
-  const [applicationType, setApplicationType] = useState(applicationTypes.pending)
+  const [searchText, setSearchText] = useState('');
+  const [applicationType, setApplicationType] = useState(user.role == 'officer' ? "pending" : user.role == 'reviewer' ? "review" : "finalize")
   const navigate = useNavigate();
+
+  // console.log(user)
 
   const getapplicants = async () => {
     setLoading(true);
     try {
       const { data } = await client.get(`/loan-applications?decision=${applicationType}`);
-      //   toast.success("Loaded Successfully", {
-      //     position: "top-left",
-      //   });
+      toast.success("Loaded Successfully", {
+        position: "top-left",
+      });
       setApplicants(data.reverse());
       console.log(data);
     } catch (error) {
@@ -107,7 +112,7 @@ export default function Applicants() {
       //   toast.success("Sent Successfully", {
       //     position: "top-left",
       //   });
-      navigate("/applicant-analysis", { state: { modelBody: body, response: data[0], readableBody: params.row } });
+      navigate("/applicant-analysis", { state: { modelBody: body, response: data[0], readableBody: { ...params.row, ...getApplicantInfoField(params.row) } } });
       console.log(data);
     } catch (error) {
       toast.error("Failed", {
@@ -122,6 +127,7 @@ export default function Applicants() {
     getapplicants();
   }, [applicationType]);
 
+  const APPLICATION_TYPES = { finalize: "pending", approved: "approved", rejected: "rejected" }
   return (
     <SideNavLayout>
       <Modal isOpen={isCreateModalOpen}>
@@ -157,7 +163,25 @@ export default function Applicants() {
           ) : (
             <>
               <div className="flex px-4 py-2">
-                <SearchBar placeholder={'Applicant name'} />
+                <SearchBar value={searchText} onChange={(e) => { setSearchText(e.target.value) }} placeholder={'Applicant name'} />
+                <div className="flex ml-auto gap-10">
+                  {
+                    user.role == "approver" &&
+                    Object.entries(APPLICATION_TYPES).map(([app_type, displayName], index) => (
+                      <div key={index} onClick={() => { setApplicationType(app_type) }} className={`flex items-center mr-auto gap-2 text-dark cursor-pointer hover:text-primary text-[0.9vw] justify-between`}>
+                        <div>{capitalize(displayName)}</div>
+                        <input
+                          type="radio"
+                          value={app_type}
+                          checked={applicationType === app_type}
+                          onChange={() => { setApplicationType(app_type) }}
+                          style={{ accentColor: "blue" }}
+                          className="w-4 h-4 border-[1px]"
+                        />
+                      </div>
+                    ))
+                  }
+                </div>
                 <ActionButton onClick={() => { setIsCreateModalOpen(true) }} text={'Add Applicant'} className={'ml-auto bg-surface-light text-white'} />
               </div>
               <div className="h-full">
@@ -165,7 +189,9 @@ export default function Applicants() {
                   columns={columns}
                   pageSize={10}
                   onRowClick={getPredictionMUI}
-                  rows={applicants}
+                  rows={applicants.filter((app) =>
+                    getApplicantInfoField(app).full_name.toLowerCase().search(searchText.toLowerCase()) !== -1
+                  )}
                 />
               </div>
             </>

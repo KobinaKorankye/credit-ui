@@ -1,5 +1,4 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useFormikContext } from "formik";
 import React from "react";
 
 export default function RegularInput({

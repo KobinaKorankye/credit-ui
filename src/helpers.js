@@ -225,7 +225,7 @@ export function convertDictionaryToArrayOfObjects(dictionaryOfArrays) {
 export function filterByDate(data, column, options = {}, isDict = false) {
   const { date, startDate, endDate, filterType } = options;
   const data_ = isDict ? convertDictionaryToArrayOfObjects(data) : data
-
+console.log('Data_:', data_)
   return data_.filter(item => {
     const itemDate = parseISO(item[column]); // Parse date from ISO string format
 

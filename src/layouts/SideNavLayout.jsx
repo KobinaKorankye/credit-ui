@@ -18,7 +18,7 @@ import NavItem from "../components/NavItem";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentSideNavSection, toggleNavbar } from "../store/navSlice";
-import { BiPackage, BiSearch } from "react-icons/bi";
+import { BiMoneyWithdraw, BiPackage, BiSearch } from "react-icons/bi";
 import { HiViewGrid } from "react-icons/hi";
 import AppInput from "../components/AppInput";
 
@@ -26,12 +26,17 @@ const sidenavs = [
   {
     text: "Dashboard",
     icon: HiViewGrid,
-    path: "/",
+    path: "/dashboard",
   },
   {
     text: "Applicants",
     icon: BsPeople,
     path: "/applicants",
+  },
+  {
+    text: "Loans",
+    icon: BiMoneyWithdraw,
+    path: "/loans",
   },
   {
     text: "Products",

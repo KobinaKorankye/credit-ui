@@ -151,7 +151,7 @@ export function getKDEData(dataArray, columnName) {
   const columnData = dataArray.map(item => item[columnName]);
 
   // Extract the class values (either `class` or `class_`)
-  const classArray = dataArray.map(item => item.class || item.class_);
+  const classArray = dataArray.map(item => item.class || item.class_ || item.outcome);
 
   // Split the column data into defaults (class 0) and non-defaults (class 1)
   const defaultValues = columnData.filter((_, i) => classArray[i] === 0);

@@ -33,6 +33,7 @@ import Modal from "../components/modals/Modal";
 import { useReactToPrint } from 'react-to-print';
 import client from "../api/client";
 import { toast } from "react-toastify";
+import { format } from "date-fns";
 
 export default function Analysis() {
   const [numColumn, setNumColumn] = useState("credit_amount");
@@ -48,7 +49,7 @@ export default function Analysis() {
 
   const [showHist4NumGType, setShowHist4NumGType] = useState(false);
   const [globalFI, setGlobalFI] = useState(false);
-  const navItems = ["Applicant Details", "Data Analytics", "Feature Importances", "Risk Parameters", "Application Report", "Decision"];
+  const navItems = ["Applicant Details", "Data Analytics", "Feature Importances", "Risk Parameters", "Application Report"];
   const [selectedNav, setSelectedNav] = useState(navItems[0]);
   const [showNumGraph, setShowNumGraph] = useState(true);
   const [recoveries, setRecoveries] = useState(0)
@@ -109,7 +110,7 @@ export default function Analysis() {
               <div className="uppercase font-semibold mt-5 mb-1 text-primary font-serif">KEY MEASURES</div>
               <div className="flex flex-col gap-1">
                 <div className="whitespace-nowrap overflow-visible">Debt Service Coverage Ratio: <span className="font-semibold text-base ml-1">{((readableBody.income * readableBody.duration_in_months) / readableBody.loan_amount).toFixed(2)}</span></div>
-                <div className="whitespace-nowrap overflow-visible">Probability of Default (PD): <span className="font-semibold text-base ml-1">{numeral(response.proba).format('0.00%')}</span></div>
+                <div className="whitespace-nowrap overflow-visible">Probability of Default (PD): <span className="font-semibold text-base ml-1">{numeral(response.default_proba).format('0.00%')}</span></div>
                 <div className="whitespace-nowrap overflow-visible">Exposure at Default (EAD): <span className="font-semibold text-base ml-1">GH₵{numeral(readableBody.loan_amount).format('0,0.00')}</span></div>
                 <div className="whitespace-nowrap overflow-visible">Loss Given Default (LGD): <span className="font-semibold text-base ml-1">{numeral((readableBody.loan_amount - recoveries) / readableBody.loan_amount).format('0.00%')}</span></div>
               </div>
@@ -326,7 +327,7 @@ export default function Analysis() {
               <div className="grid grid-cols-2 gap-8">
                 <RiskItem icon={LuPercent}
                   name={`Probability of Default (PD)`}
-                  value={`${numeral(response.proba).format('0.00%')}`} />
+                  value={`${numeral(response.default_proba).format('0.00%')}`} />
                 <RiskItem icon={LuPackageOpen}
                   name={`Exposure at Default (EAD)`}
                   value={`GH₵${numeral(readableBody.loan_amount).format('0,0.00')}`} />
@@ -336,7 +337,7 @@ export default function Analysis() {
                 <RiskItem icon={LuTrendingDown}
                   name={`Expected Loss (EL)`}
                   value={`GH₵${numeral(
-                    response.proba *
+                    response.default_proba *
                     readableBody.loan_amount *
                     ((readableBody.loan_amount - recoveries) / readableBody.loan_amount)).format('0,0.00')}`} />
               </div>
@@ -367,7 +368,7 @@ export default function Analysis() {
               <div className="uppercase font-semibold mt-5 mb-1 text-primary font-serif">KEY MEASURES</div>
               <div className="flex flex-col gap-1">
                 <div className="">Debt Service Coverage Ratio: <span className="font-semibold text-base ml-1">{((readableBody.income * readableBody.duration_in_months) / readableBody.loan_amount).toFixed(2)}</span></div>
-                <div className="">Probability of Default (PD): <span className="font-semibold text-base ml-1">{numeral(response.proba).format('0.00%')}</span></div>
+                <div className="">Probability of Default (PD): <span className="font-semibold text-base ml-1">{numeral(response.default_proba).format('0.00%')}</span></div>
                 <div className="">Exposure at Default (EAD): <span className="font-semibold text-base ml-1">GH₵{numeral(readableBody.loan_amount).format('0,0.00')}</span></div>
                 <div className="">Loss Given Default (LGD): <span className="font-semibold text-base ml-1">{numeral((readableBody.loan_amount - recoveries) / readableBody.loan_amount).format('0.00%')}</span></div>
               </div>
@@ -384,6 +385,16 @@ export default function Analysis() {
                     <div className="">Applicant's age of <span className="font-semibold text-base ml-1">{readableBody.age} years</span> falls in the <span className="font-semibold text-base ml-1">{findQuartile(readableBody.age, data.age)}</span></div>
                   </>
                 }
+              </div>
+
+              <div className="flex mt-20 gap-5 items-end">
+                <div className="px-5 py-3 text-xl text-surface-light font-black border-2 border-surface-light">
+                  APPROVED
+                </div>
+                <div className=" mb-2 text-lg font-mono">
+                  {format(new Date(readableBody?.date_created), "dd MMM yyyy")}
+                </div>
+
               </div>
               {/* </div> */}
             </div>
