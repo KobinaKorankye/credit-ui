@@ -31,6 +31,7 @@ import Login from './pages/Login';
 import UserContext from './contexts/UserContext';
 import { useState, useContext } from 'react';
 import Register from './pages/Register';
+import AddApplicant from './pages/AddApplicant';
 
 function ProtectedLayout() {
   const { user } = useContext(UserContext);
@@ -50,6 +51,7 @@ function App() {
             <Route element={<ProtectedLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/applicants" element={<Applicants />} />
+              <Route path="/add-applicant" element={<AddApplicant />} />
               <Route path="/products" element={<Products />} />
               <Route path="/loans" element={<Loans />} />
               <Route path="/applicant-analysis" element={<ApplicantAnalysis />} />

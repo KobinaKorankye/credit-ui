@@ -43,7 +43,7 @@ const FormInput = ({
             setFieldTouched(name);
           }}
           placeholder={placeholder}
-          value={values[name] || ''}
+          value={values[name]}
           onChange={handleChange}
           className="w-full focus:outline-none focus:shadow-outline bg-transparent text-sm"
           id={name}

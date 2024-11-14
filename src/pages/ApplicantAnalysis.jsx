@@ -228,7 +228,7 @@ export default function ApplicantAnalysis() {
                             showInfo
                             highlightPoint={modelBody[numColumn]}
                             columnArray={[...data[numColumn], modelBody[numColumn]]}
-                            classArray={[...data["class"], getPredClass(response)]}
+                            classArray={[...(data["class"] || data["class_"]), getPredClass(response)]}
                           />
                         </>
                       )}

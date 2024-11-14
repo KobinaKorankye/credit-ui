@@ -182,7 +182,7 @@ export default function Applicants() {
                     ))
                   }
                 </div>
-                <ActionButton onClick={() => { setIsCreateModalOpen(true) }} text={'Add Applicant'} className={'ml-auto bg-surface-light text-white'} />
+                <ActionButton onClick={() => { navigate('/add-applicant') }} text={'Add Applicant'} className={'ml-auto bg-surface-light text-white'} />
               </div>
               <div className="h-full">
                 <MUIDataTable

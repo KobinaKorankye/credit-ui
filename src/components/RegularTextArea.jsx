@@ -19,8 +19,8 @@ export default function RegularTextArea({
                 {label || name}
             </label>
             <div
-                className="flex w-full items-start appearance-none rounded border border-gray-400 w-full py-2 px-3 text-gray-900 
-                leading-tight"
+                className={`flex ${disabled?'bg-gray-100':'bg-transparent'} w-full items-start appearance-none rounded border border-gray-400 w-full py-2 px-3 text-gray-900 
+                leading-tight`}
             >
                 {icon && (
                     <FontAwesomeIcon
@@ -36,7 +36,7 @@ export default function RegularTextArea({
                     placeholder={placeholder}
                     value={value}
                     onChange={onChange}
-                    className="w-full focus:outline-none focus:shadow-outline bg-transparent text-gray-900 resize-none"
+                    className={`w-full focus:outline-none focus:shadow-outline bg-transparent text-gray-900 resize-none`}
                     id={name}
                     rows={rows}
                 />
