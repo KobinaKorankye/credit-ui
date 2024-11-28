@@ -79,14 +79,14 @@ export default function SideNavLayout({ children }) {
       >
         <div
           onClick={toggle}
-          className="w-full bg-white relative flex justify-start text-lg font-bold items-center text-sm gap-2 font-serif px-5 py-7 text-gray-700"
+          className="w-full bg-surface relative flex justify-start text-lg font-bold items-center text-sm gap-2 font-serif px-5 py-7 text-gray-200"
         >
           <TbAnalyze className="text-4xl" />
-          {!isCollapsed && <span className="whitespace-nowrap overflow-hidden">Credit Analytics</span>}
+          {!isCollapsed && <span style={{fontFamily: 'Quicksand'}} className="whitespace-nowrap overflow-hidden">Credit Analytics</span>}
 
         </div>
         <div
-          className={`flex-1 flex flex-col px-5 gap-2 mt-5 cursor-pointer w-full font-bold text-sm`}
+          className={`flex-1 flex flex-col cursor-pointer w-full font-bold text-sm`}
         >
           {sidenavs.map((nav, index) => (
             <NavItem
@@ -100,10 +100,10 @@ export default function SideNavLayout({ children }) {
             />
           ))}
 
-          <div className="mt-auto mx-2 mb-1 flex flex-col gap-2">
+          {/* <div className="mt-auto mx-2 mb-1 flex flex-col gap-2">
             <div className="underline text-surface" onClick={() => navigate("/german")}>{isCollapsed ? 'P' : "Public"}</div>
             <div className="underline text-surface" onClick={() => navigate("/adehyeman")}>{isCollapsed ? 'L' : "Local"}</div>
-          </div>
+          </div> */}
         </div>
       </div>
       <div

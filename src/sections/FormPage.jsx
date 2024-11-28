@@ -22,8 +22,9 @@ export default function FormPage({ forApplicants }) {
   const { readableBody } = useLocation().state;
 
   const initialValues = forApplicants
-    ? { ...readableBody, ...getApplicantInfoField(readableBody) }
-    : readableBody;
+  ? { ...readableBody, ...getApplicantInfoField(readableBody) }
+  : readableBody;
+  console.log("readableBody: ",initialValues)
   return (
     <div className="bg-white w-full overflow-y-auto px-16">
       <Formik initialValues={initialValues}>

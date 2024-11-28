@@ -178,19 +178,25 @@ export default function TermsAdjustmentPage({ forApplicants }) {
           }
         </div>
 
-        <div className="mt-20 w-[80%]">
-          <RegularTextArea disabled={user.role != 'officer'} value={user.role == 'officer' ? notes : readableBody[`officer_notes`]} label={'Officer Notes'} placeholder={'Enter notes/comments here'} onChange={(e) => { setNotes(e.target.value) }} />
+        <div className="md:grid mt-20 grid-cols-3">
+          <div className="col-span-2">
+            <RegularTextArea disabled={user.role != 'officer'} value={user.role == 'officer' ? notes : readableBody[`officer_notes`]} label={'Officer Notes'} placeholder={'Enter notes/comments here'} onChange={(e) => { setNotes(e.target.value) }} />
+          </div>
         </div>
         {
           user.role != 'officer' &&
-          <div className="mt-5 w-[80%]">
-            <RegularTextArea disabled={user.role != 'reviewer'} value={user.role == 'reviewer' ? notes : readableBody[`reviewer_notes`]} label={'Reviewer Notes'} placeholder={'Enter notes/comments here'} onChange={(e) => { setNotes(e.target.value) }} />
+          <div className="md:grid mt-20 grid-cols-3">
+            <div className="col-span-2">
+              <RegularTextArea disabled={user.role != 'reviewer'} value={user.role == 'reviewer' ? notes : readableBody[`reviewer_notes`]} label={'Reviewer Notes'} placeholder={'Enter notes/comments here'} onChange={(e) => { setNotes(e.target.value) }} />
+            </div>
           </div>
         }
         {
           user.role == 'approver' &&
-          <div className="mt-5 w-[80%]">
-            <RegularTextArea disabled={readableBody['decision_date']} value={user.role == 'approver' ? notes : readableBody[`approver_notes`]} label={'Approver Notes'} placeholder={'Enter notes/comments here'} onChange={(e) => { setNotes(e.target.value) }} />
+          <div className="md:grid mt-20 grid-cols-3">
+            <div className="col-span-2">
+              <RegularTextArea disabled={readableBody['decision_date']} value={user.role == 'approver' ? notes : readableBody[`approver_notes`]} label={'Approver Notes'} placeholder={'Enter notes/comments here'} onChange={(e) => { setNotes(e.target.value) }} />
+            </div>
           </div>
         }
 

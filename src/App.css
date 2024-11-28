@@ -4,3 +4,10 @@
   background-position: start;
   background-size: 32% 48%;
 }
+
+@font-face {
+  font-family: 'Quicksand';
+  src: local('Quicksand'), url(./assets/fonts/Quicksand.ttf) format('truetype');
+  /* other formats include: 'woff2', 'truetype, 'opentype',
+                            'embedded-opentype', and 'svg' */
+}

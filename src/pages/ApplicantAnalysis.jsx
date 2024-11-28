@@ -309,9 +309,9 @@ export default function ApplicantAnalysis() {
                   </div>
                   <div className="w-full">
                     {globalFI ? (
-                      <BarChart height={500} global data={response.global_importances} />
+                      <BarChart height={1500} global data={response.global_importances} />
                     ) : (
-                      <BarChart height={500}
+                      <BarChart height={1000}
                         data={response.shap_explanation}
                         bias={response.base_value}
                       />

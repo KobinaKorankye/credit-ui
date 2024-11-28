@@ -312,9 +312,9 @@ export default function Analysis() {
                 </div>
                 <div className="w-full">
                   {globalFI ? (
-                    <BarChart height={500} global data={response.global_importances} />
+                    <BarChart height={1500} global data={response.global_importances} />
                   ) : (
-                    <BarChart height={500}
+                    <BarChart height={1000}
                       data={response.shap_explanation}
                       bias={response.base_value}
                     />
@@ -387,12 +387,22 @@ export default function Analysis() {
                 }
               </div>
 
-              <div className="flex mt-20 gap-5 items-end">
-                <div className="px-5 py-3 text-xl text-surface-light font-black border-2 border-surface-light">
-                  APPROVED
-                </div>
-                <div className=" mb-2 text-lg font-mono">
-                  {format(new Date(readableBody?.date_created), "dd MMM yyyy")}
+              <div className="flex mt-20 gap-5 items-end justify-between">
+                {/* <div className="flex flex-col items-center gap-1">
+                  <div className="px-5 py-3 text-xl text-surface-light font-black border-2 border-surface-light">
+                    APPROVED
+                  </div>
+                  <div className=" mb-2 text-lg font-mono">
+                    {format(new Date(readableBody?.date_created), "dd MMM yyyy")}
+                  </div>
+                </div> */}
+                <div className="flex flex-col items-center gap-1">
+                  <div className={`px-4 py-2 text-lg ${readableBody.outcome ? 'text-surface-light border-surface-light' : 'text-secondary border-secondary'} uppercase font-black border-2`}>
+                    {["Defaulted", "Repaid"][readableBody.outcome]}
+                  </div>
+                  <div className=" mb-2 text-lg font-mono">
+                    {format(new Date(readableBody?.date_updated), "dd MMM yyyy")}
+                  </div>
                 </div>
 
               </div>

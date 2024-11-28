@@ -68,6 +68,7 @@ export default function Dashboard() {
   const { user } = useContext(UserContext)
   const [showCustomFIlterCreationModal, setShowCustomFIlterCreationModal] = useState(false)
   const [taskId, setTaskId] = useState(null);
+  const [filteredLoanees, setFilteredLoanees] = useState([])
   const eventSourceRef = useRef(null);
 
   console.log("Context", user)
@@ -166,6 +167,7 @@ export default function Dashboard() {
       setActiveFilter(filter)
       setActiveFilterStartDate(startDate)
       setActiveFilterEndDate(endDate)
+      setFilteredLoanees(filterByDate(loans, "date_updated", { filterType: filter, startDate, endDate, date: startDate }))
 
     } catch (error) {
       toast.error("Failed to load dashboard data", {
@@ -305,7 +307,6 @@ export default function Dashboard() {
     // { value: 'date_range', label: 'Date Range' },
   ];
 
-  const filteredLoanees = filterByDate(loans, "date_updated", { filterType: filter, startDate, endDate, date: startDate })
   // const filteredGApplicants = filterByDate(gapplicants, "date_updated", { filterType: filter, startDate, endDate, date: startDate })
 
   // const loaneeCreditAmounts = filteredLoanees.map((l) => l.credit_amount);
@@ -328,6 +329,10 @@ export default function Dashboard() {
     getDashboardData();
     getCustomFilters();
   }, []);
+
+  useEffect(() => {
+    setFilteredLoanees(filterByDate(loans, "date_updated", { filterType: filter, startDate, endDate, date: startDate }))
+  }, [loans]);
 
   return (
     <SideNavLayout>
@@ -466,19 +471,6 @@ export default function Dashboard() {
       </div> */}
 
       <div className="grid grid-cols-8 gap-4 mt-4">
-        <div className="col-span-4 grid grid-cols-2 gap-4">
-          <StatCard title={'Number of Applications'} statClassName={'text-2xl text-gray-500'} className={'border border-gray-400'} noColor icon={LuUser} stat={dashboardData?.application_stats?.total} />
-          <StatCard title={'Approved Applications'} className={''} alt icon={() => <LuUserCheck className="text-primary/50" />} stat={dashboardData?.application_stats?.approved} />
-          <StatCard title={'Pending Applications'} className={''} alt option={2} icon={() => <LuUserCog className="text-accent/50" />} stat={dashboardData?.application_stats?.pending} />
-          <StatCard title={'Rejected Applications'} className={''} icon={() => <LuUserX className="text-secondary/50" />} stat={dashboardData?.application_stats?.rejected} />
-        </div>
-        <Card title={'Average Number of Applications'} titleClassName={'text-gray-700'} className={'col-span-4'}>
-          <div className="pt-5 mt-1 w-full">
-            <BarGraph grid height={200} data={getRechartsDataForPlot(dashboardData?.application_stats?.total, { filterType: activeFilter, startDate: activeFilterStartDate, endDate: activeFilterEndDate, date: activeFilterStartDate })} />
-          </div>
-        </Card>
-      </div>
-      <div className="grid grid-cols-8 gap-4 mt-4">
         <Card title={'NPL Ratio'} className={'col-span-2'}>
           <DonutChart legendComponent={CurrencyLegend} showRatio ratioIndexToShow={0} data={dashboardData?.loan_stats?.npl_donut} />
         </Card>
@@ -498,6 +490,21 @@ export default function Dashboard() {
           <DonutChart showRatio ratioIndexToShow={0} data={dashboardData?.loan_stats?.default_rate} />
         </Card>
       </div>
+
+      <div className="grid grid-cols-8 gap-4 mt-4">
+        <div className="col-span-4 grid grid-cols-2 gap-4">
+          <StatCard title={'Number of Applications'} statClassName={'text-2xl text-gray-500'} className={'border border-gray-400'} noColor icon={LuUser} stat={dashboardData?.application_stats?.total} />
+          <StatCard title={'Approved Applications'} className={''} alt icon={() => <LuUserCheck className="text-primary/50" />} stat={dashboardData?.application_stats?.approved} />
+          <StatCard title={'Pending Applications'} className={''} alt option={2} icon={() => <LuUserCog className="text-accent/50" />} stat={dashboardData?.application_stats?.pending} />
+          <StatCard title={'Rejected Applications'} className={''} icon={() => <LuUserX className="text-secondary/50" />} stat={dashboardData?.application_stats?.rejected} />
+        </div>
+        <Card title={'Average Number of Applications'} titleClassName={'text-gray-700'} className={'col-span-4'}>
+          <div className="pt-5 mt-1 w-full">
+            <BarGraph grid height={200} data={getRechartsDataForPlot(dashboardData?.application_stats?.total, { filterType: activeFilter, startDate: activeFilterStartDate, endDate: activeFilterEndDate, date: activeFilterStartDate })} />
+          </div>
+        </Card>
+      </div>
+
       <div className="grid grid-cols-5 gap-4 mt-4">
         <Card alt className={'border border-gray-400 col-span-5'}
           containerClassName={``}
@@ -564,7 +571,7 @@ export default function Dashboard() {
               <MUIDataTable
                 columns={columns}
                 onRowClick={getPredictionMUI}
-                rows={loans}
+                rows={filteredLoanees}
               />
             </div>
           )}
