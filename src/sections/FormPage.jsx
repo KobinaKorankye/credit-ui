@@ -22,9 +22,9 @@ export default function FormPage({ forApplicants }) {
   const { readableBody } = useLocation().state;
 
   const initialValues = forApplicants
-  ? { ...readableBody, ...getApplicantInfoField(readableBody) }
-  : readableBody;
-  console.log("readableBody: ",initialValues)
+    ? { ...readableBody, ...getApplicantInfoField(readableBody) }
+    : readableBody;
+  console.log("readableBody: ", initialValues)
   return (
     <div className="bg-white w-full overflow-y-auto px-16">
       <Formik initialValues={initialValues}>
@@ -45,6 +45,8 @@ export default function FormPage({ forApplicants }) {
               label="Marital Status"
               name="marital_status"
             />
+            <FormInput label="Email" name="email" type="email" />
+            <FormInput label="Mobile" name="mobile" type="text" />
             <FormInput disabled label="Sex" name="sex" />
             <FormInput disabled label="Foreign Worker" name="foreign_worker" />
           </div>
