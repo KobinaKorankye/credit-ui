@@ -224,6 +224,13 @@ export default function AddApplicant() {
             telephone, email, mobile, foreign_worker, ...explicitFields
         } = form;
 
+        const replaceZeroWithPrefix = (str) => {
+            if (str.startsWith("0")) {
+                return "233" + str.slice(1);
+            }
+            return str;
+        }
+
         const saveableData = {
             ...explicitFields,
             nc_info: {
@@ -234,7 +241,7 @@ export default function AddApplicant() {
                 income,
                 telephone,
                 email,
-                mobile,
+                mobile: replaceZeroWithPrefix(mobile),
                 foreign_worker
             },
         };
