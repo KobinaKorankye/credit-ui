@@ -118,16 +118,21 @@ export default function TermsAdjustmentPage({ forApplicants }) {
   return (
     <div className="bg-white w-full overflow-y-auto px-16 pb-10">
       <>
-        <div className="tracking-wider font-serif text-sm font-bold pt-10 pb-5 flex gap-1">Loan Terms <div className="text-xs font-normal flex items-end">(Editable)</div></div>
-        <div className="w-full grid lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-14">
-          <RegularInput disabled={user.role != 'officer'} onChange={(e) => setCreditAmount(e.target.value)} value={credit_amount} label={'Loan amount'} type="number" />
+        <div className="tracking-wider font-serif text-sm font-bold pt-5 flex gap-1">Loan Terms <div className="text-xs font-normal flex items-end">(Editable)</div></div>
+        <div className="w-full grid lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-5">
+          <RegularInput disabled={user.role != 'officer'} onChange={(e) => setCreditAmount(e.target.value)} value={credit_amount} label={'Loan amount (GHS)'} type="number" />
           <RegularInput disabled={user.role != 'officer'} onChange={(e) => setDuration(e.target.value)} value={duration} label={'Loan duration (months)'} type="number" />
-          <div className="flex pt-8 gap-4">
+          <div className="flex gap-4">
             {
               ((credit_amount != readableBody.loan_amount_requested) || (duration != readableBody.duration_in_months)) &&
-              <div onClick={() => {
-                setCreditAmount(readableBody.loan_amount_requested); setDuration(readableBody.duration_in_months); setDefaultProba(response.default_proba)
-              }} className="flex items-center px-4 py-1 rounded bg-[#222] text-white cursor-pointer">Reset</div>
+              <div className="mt-3">
+                <div className={`block text-xs font-semibold mb-1 text-transparent`}>
+                  HH
+                </div>
+                <div onClick={() => {
+                  setCreditAmount(readableBody.loan_amount_requested); setDuration(readableBody.duration_in_months); setDefaultProba(response.default_proba)
+                }} className="flex items-center px-4 py-1 rounded bg-[#222] text-white h-[2.5rem] cursor-pointer">Reset</div>
+              </div>
             }
           </div>
         </div>
@@ -135,11 +140,11 @@ export default function TermsAdjustmentPage({ forApplicants }) {
         {
           ((credit_amount != saved_credit_amount) || (duration != saved_duration)) &&
           <>
-            <div className="tracking-wider font-serif text-sm font-bold pb-5 flex gap-1">Changes</div>
-            <div className="flex gap-10 mb-10">
+            <div className="text-sm font-bold flex gap-1">Changes</div>
+            <div className="flex gap-10 mb-4">
               {
                 ((credit_amount != saved_credit_amount)) &&
-                <div>
+                <div className="text-sm">
                   <div>Loan Amount</div>
                   <div className="flex gap-2">
                     <div>{saved_credit_amount}</div>
@@ -150,7 +155,7 @@ export default function TermsAdjustmentPage({ forApplicants }) {
               }
               {
                 ((duration != saved_duration)) &&
-                <div>
+                <div className="text-sm">
                   <div>Loan Duration</div>
                   <div className="flex gap-2">
                     <div>{saved_duration}</div>
@@ -163,29 +168,51 @@ export default function TermsAdjustmentPage({ forApplicants }) {
           </>
         }
 
-        <div className="flex gap-3">
-          <div className="tracking-wider font-serif text-sm font-bold">Probability of Default:
-            <span className="text-lg ml-2 text-surface-light">{numeral(default_proba).format('0.00%')}</span>
+        <div className="flex gap-3 mb-5">
+          <div className="md:grid grid-cols-3">
+            <div className="col-span-2 text-sm font-bold">
+              Probability of Default
+            </div>
+            <div className={`col-span-2 text-lg font-semibold uppercase ${parseFloat(default_proba) < 0.5 ? 'text-surface-light' : 'text-secondary'} `}>
+              {numeral(default_proba).format('0.00%')}
+            </div>
           </div>
           {
             ((credit_amount != saved_credit_amount) || (duration != saved_duration)) &&
             (
               !loading ?
-                <div onClick={getPrediction} className="flex px-2 py-1 bg-primary/30 rounded hover:bg-primary hover:text-white cursor-pointer">Re-evaluate</div>
+                <div>
+                  <div className="text-transparent">HH</div>
+                  <div onClick={getPrediction} className="flex text-sm uppercase font-bold px-2 py-1 bg-primary/30 rounded hover:bg-primary hover:text-white cursor-pointer">Re-evaluate</div>
+                </div>
                 :
-                <div className="flex px-2 py-1 bg-primary/30 rounded">Re-evaluating...</div>
+                <div>
+                  <div className="text-transparent">HH</div>
+                  <div className="flex text-sm uppercase font-bold px-2 py-1 bg-primary/30 rounded cursor-pointer">Re-evaluating...</div>
+                </div>
             )
+          }
+          {
+            user.role != 'officer' &&
+            <div className="md:grid grid-cols-3">
+              <div className="col-span-2 text-sm font-bold">
+                Proposed Decision
+              </div>
+              <div className={`col-span-2 font-semibold uppercase ${parseFloat(default_proba) < 0.5 ? 'text-surface-light' : 'text-secondary'}`}>
+                {readableBody?.decision?.split('-')[1] || (readableBody?.decision[readableBody?.decision.length - 1] == 'd') ? readableBody?.decision?.split('-')[0].split('d')[0] : readableBody?.decision?.split('-')[0]}
+              </div>
+            </div>
           }
         </div>
 
-        <div className="md:grid mt-20 grid-cols-3">
+        <div className="md:grid grid-cols-3">
           <div className="col-span-2">
             <RegularTextArea disabled={user.role != 'officer'} value={user.role == 'officer' ? notes : readableBody[`officer_notes`]} label={'Officer Notes'} placeholder={'Enter notes/comments here'} onChange={(e) => { setNotes(e.target.value) }} />
           </div>
         </div>
         {
           user.role != 'officer' &&
-          <div className="md:grid mt-20 grid-cols-3">
+          <div className="md:grid grid-cols-3">
             <div className="col-span-2">
               <RegularTextArea disabled={user.role != 'reviewer'} value={user.role == 'reviewer' ? notes : readableBody[`reviewer_notes`]} label={'Reviewer Notes'} placeholder={'Enter notes/comments here'} onChange={(e) => { setNotes(e.target.value) }} />
             </div>
@@ -193,7 +220,7 @@ export default function TermsAdjustmentPage({ forApplicants }) {
         }
         {
           user.role == 'approver' &&
-          <div className="md:grid mt-20 grid-cols-3">
+          <div className="md:grid grid-cols-3">
             <div className="col-span-2">
               <RegularTextArea disabled={readableBody['decision_date']} value={user.role == 'approver' ? notes : readableBody[`approver_notes`]} label={'Approver Notes'} placeholder={'Enter notes/comments here'} onChange={(e) => { setNotes(e.target.value) }} />
             </div>
@@ -202,12 +229,12 @@ export default function TermsAdjustmentPage({ forApplicants }) {
 
         <div>
           {!readableBody['decision_date'] ?
-            <div className="flex mt-5">
+            <div className="flex mt-10">
               {
                 !loading ?
                   (
                     ((credit_amount != saved_credit_amount) || (duration != saved_duration) || (notes && notes != readableBody[`${user.role}_notes`])) ?
-                      <div onClick={updateApplication} className="flex cursor-pointer px-2 py-2 bg-primary text-white rounded">Save Changes</div>
+                      <div onClick={updateApplication} className="flex cursor-pointer font-medium uppercase text-sm px-2 py-2 bg-primary text-white rounded">Save Changes</div>
                       :
                       <div className="flex gap-4">
                         <div onClick={() => { makeDecision(decisions[user.role].rejected) }} className="flex px-4 cursor-pointer py-2 bg-secondary text-white rounded">Reject</div>
