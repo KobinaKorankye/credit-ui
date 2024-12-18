@@ -193,13 +193,13 @@ export default function TermsAdjustmentPage({ forApplicants }) {
             )
           }
           {
-            user.role != 'officer' &&
+            (user.role != 'officer' && readableBody?.decision?.split('-')?.length > 1) &&
             <div className="md:grid grid-cols-3">
               <div className="col-span-2 text-sm font-bold">
                 Proposed Decision
               </div>
               <div className={`col-span-2 font-semibold uppercase ${parseFloat(default_proba) < 0.5 ? 'text-surface-light' : 'text-secondary'}`}>
-                {readableBody?.decision?.split('-')[1] || (readableBody?.decision[readableBody?.decision.length - 1] == 'd') ? readableBody?.decision?.split('-')[0].split('d')[0] : readableBody?.decision?.split('-')[0]}
+                {readableBody?.decision?.split('-')[1]}
               </div>
             </div>
           }
