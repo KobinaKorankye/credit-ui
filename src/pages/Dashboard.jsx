@@ -62,7 +62,7 @@ export default function Dashboard() {
   const [activeFilterEndDate, setActiveFilterEndDate] = useState(format(new Date(), "yyyy-MM-dd"))
   const [startDate, setStartDate] = useState('2020-07-01')
   const [endDate, setEndDate] = useState(format(new Date(), "yyyy-MM-dd"))
-  const [filter, setFilter] = useState('year')
+  const [filter, setFilter] = useState('2024')
   const [dashboardData, setDashboardData] = useState({})
   const [customFilters, setCustomFilters] = useState([])
   const { user } = useContext(UserContext)
@@ -299,12 +299,13 @@ export default function Dashboard() {
 
   const options = [
     // { value: 'all', label: 'All' },
+    { value: '2024', label: '2024' },
     { value: 'today', label: 'Today' },
     { value: 'week', label: 'This Week' },
     { value: 'month', label: 'This Month' },
     { value: 'year', label: 'This Year' },
     { value: 'date', label: 'Date' },
-    // { value: 'date_range', label: 'Date Range' },
+    { value: 'date_range', label: 'Date Range' },
   ];
 
   // const filteredGApplicants = filterByDate(gapplicants, "date_updated", { filterType: filter, startDate, endDate, date: startDate })
@@ -312,7 +313,7 @@ export default function Dashboard() {
   // const loaneeCreditAmounts = filteredLoanees.map((l) => l.credit_amount);
 
   useEffect(() => {
-    if (["today", "week", "month", "year"].includes(filter)) {
+    if (["today", "week", "month", "year", "2024"].includes(filter)) {
       console.log("Filter: ", filter)
       const { startDate, endDate } = dateRangeStartAndEnd(filter)
       setStartDate(startDate)

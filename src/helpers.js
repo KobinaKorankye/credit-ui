@@ -225,7 +225,7 @@ export function convertDictionaryToArrayOfObjects(dictionaryOfArrays) {
 export function filterByDate(data, column, options = {}, isDict = false) {
   const { date, startDate, endDate, filterType } = options;
   const data_ = isDict ? convertDictionaryToArrayOfObjects(data) : data
-console.log('Data_:', data_)
+  console.log('Data_:', data_)
   return data_.filter(item => {
     const itemDate = parseISO(item[column]); // Parse date from ISO string format
 
@@ -251,6 +251,15 @@ console.log('Data_:', data_)
           return isWithinInterval(itemDate, {
             start: startOfDay(parsedDate),
             end: endOfDay(parsedDate),
+          });
+
+        case '2024':
+          const parsedStartDate2024 = parseISO(startDate);
+          const parsedEndDate2024 = parseISO(endDate);
+
+          return isWithinInterval(itemDate, {
+            start: startOfDay(parsedStartDate2024),
+            end: endOfDay(parsedEndDate2024),
           });
 
         case 'date_range':
@@ -518,6 +527,12 @@ export function dateRangeStartAndEnd(option) {
     case 'year':
       startDate = startOfYear(now);
       endDate = endOfYear(now);
+      break;
+
+    case '2024':
+      const fixed2024Day = new Date(2024, 6, 4);
+      startDate = startOfYear(fixed2024Day);
+      endDate = endOfYear(fixed2024Day);
       break;
 
     default:
