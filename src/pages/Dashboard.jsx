@@ -62,7 +62,7 @@ export default function Dashboard() {
   const [activeFilterEndDate, setActiveFilterEndDate] = useState(format(new Date(), "yyyy-MM-dd"))
   const [startDate, setStartDate] = useState('2020-07-01')
   const [endDate, setEndDate] = useState(format(new Date(), "yyyy-MM-dd"))
-  const [filter, setFilter] = useState('year')
+  const [filter, setFilter] = useState('all')
   const [dashboardData, setDashboardData] = useState({})
   const [customFilters, setCustomFilters] = useState([])
   const { user } = useContext(UserContext)
@@ -298,7 +298,7 @@ export default function Dashboard() {
   ];
 
   const options = [
-    // { value: 'all', label: 'All' },
+    { value: 'all', label: 'All' },
     { value: 'today', label: 'Today' },
     { value: 'week', label: 'This Week' },
     { value: 'month', label: 'This Month' },
@@ -409,7 +409,7 @@ export default function Dashboard() {
         {/* <div className="flex items-end mt-2">
           <RegularSelectAlt boxClassName="w-[11vw]" onChange={(e) => setFilter(e.target.value)} value={filter} name="filter" label="Filter By" options={options} />
         </div> */}
-        <div className="flex gap-4 w-full mt-4 items-center overflow-x-auto">
+        <div className="flex gap-5 w-full mt-5 items-center overflow-x-auto">
           {
             options.map((option, index) => (
               <div key={index} className={`${option.value === filter ? 'text-white bg-surface' : 'bg-white border border-gray-700'} cursor-pointer px-4 py-1 rounded-full text-xs`} onClick={(e) => setFilter(option.value)}>
@@ -435,7 +435,7 @@ export default function Dashboard() {
           <Tooltip variant="light" id="add-stats" place="right">Add custom filter</Tooltip> */}
 
         </div>
-        <div className={`flex items-end overflow-hidden duration-200 transition-all h-[4.5rem] border-t border-gray-400 mt-4`}>
+        <div className={`flex items-end overflow-hidden duration-200 transition-all h-[4.5rem] border-t border-gray-400 mt-5`}>
           <RegularInputAlt type="date" disabled={!["date", "date_range"].includes(filter)} boxClassName="w-[11vw]" onChange={(e) => setStartDate(e.target.value)} value={startDate} name="sdt" label={["date", "today"].includes(filter) ? "Date" : "Start Date"} />
           {
             !["date", "today"].includes(filter) &&
@@ -463,14 +463,14 @@ export default function Dashboard() {
       {/* <SummaryCard 
         // viewBtnClassName={`bg-accent/30 text-black hover:border hover:border-accent/90`} 
         className={''} title={"All Loans"} value={9000} volume={9} /> */}
-      {/* <div className="grid grid-cols-4 gap-4 mt-4">
+      {/* <div className="grid grid-cols-4 gap-5 mt-5">
         <StatCard title={'Number of Applications'} statClassName={'text-2xl text-gray-500'} className={'border border-gray-400'} noColor icon={LuUser} stat={filteredLoanees.length + filteredGApplicants.length} />
         <StatCard title={'Approved Applications'} className={''} alt icon={() => <LuUserCheck className="text-primary/50" />} stat={filteredLoanees.length} />
         <StatCard title={'Rejected Applications'} className={''} icon={() => <LuUserX className="text-secondary/50" />} stat={filteredGApplicants.filter((g) => g.status === "rejected").length} />
         <StatCard title={'Pending Applications'} className={''} alt option={2} icon={() => <LuUserCog className="text-accent/50" />} stat={filteredGApplicants.filter((g) => g.status === "pending").length} />
       </div> */}
 
-      <div className="grid grid-cols-8 gap-4 mt-4">
+      <div className="grid grid-cols-8 gap-5 mt-5">
         <Card title={'NPL Ratio'} className={'col-span-2'}>
           <DonutChart legendComponent={CurrencyLegend} showRatio ratioIndexToShow={0} data={dashboardData?.loan_stats?.npl_donut} />
         </Card>
@@ -491,8 +491,8 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-8 gap-4 mt-4">
-        <div className="col-span-4 grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-8 gap-5 mt-5">
+        <div className="col-span-4 grid grid-cols-2 gap-5">
           <StatCard title={'Number of Applications'} statClassName={'text-2xl text-gray-500'} className={'border border-gray-400'} noColor icon={LuUser} stat={dashboardData?.application_stats?.total} />
           <StatCard title={'Approved Applications'} className={''} alt icon={() => <LuUserCheck className="text-primary/50" />} stat={dashboardData?.application_stats?.approved} />
           <StatCard title={'Pending Applications'} className={''} alt option={2} icon={() => <LuUserCog className="text-accent/50" />} stat={dashboardData?.application_stats?.pending} />
@@ -505,12 +505,12 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-5 gap-4 mt-4">
+      <div className="grid grid-cols-5 gap-5 mt-5">
         <Card alt className={'border border-gray-400 col-span-5'}
           containerClassName={``}
           titleClassName={`text-gray-700 uppercase`}
           title={`Disbursed Loans`}>
-          <div className="flex gap-10 mt-4">
+          <div className="flex gap-10 mt-5">
             <div className="flex-1">
               <div className="flex-1 flex items-center justify-between">
                 <div>
@@ -520,7 +520,7 @@ export default function Dashboard() {
                   <div className={'text-4xl text-right font-medium text-surface-light'}>GH₵{numeral(dashboardData?.loan_stats?.summary?.total).format("0,0.00")}</div>
                 </div>
               </div>
-              <div className="flex-1 grid grid-cols-3 gap-4 mt-4 items-center justify-between">
+              <div className="flex-1 grid grid-cols-3 gap-5 mt-5 items-center justify-between">
                 <div>
                   <div className="text-sm font-semibold text-dark w-full flex items-center">
                     <div className={`text-gray-500 uppercase`}>Min</div>
@@ -544,9 +544,9 @@ export default function Dashboard() {
           </div>
         </Card>
       </div>
-      <div className="mt-4 col-span-2">
+      <div className="mt-5 col-span-2">
         <div className="flex flex-col bg-white">
-          {/* <div className="flex gap-4 items-center">
+          {/* <div className="flex gap-5 items-center">
             <div className="md:w-[50%]">
               <SearchBar
                 value={searchText}

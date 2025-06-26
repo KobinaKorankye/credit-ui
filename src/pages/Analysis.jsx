@@ -91,7 +91,7 @@ export default function Analysis() {
       <Modal isOpen={fullScreenReport}>
         <div onClick={() => setFullScreenReport(false)} className="w-screen h-screen flex flex-col items-center bg-black/50">
           <div ref={printRef} onClick={(e) => { e.stopPropagation() }} className="bg-white w-[50%] h-full overflow-y-auto">
-            <div className="flex justify-between text-xl uppercase font-serif font-bold px-16 mt-10">
+            <div className="flex justify-between text-xl uppercase  font-bold px-16 mt-10">
               <div>{selectedNav}</div>
             </div>
             <div className="px-16 mt-10">
@@ -101,25 +101,25 @@ export default function Analysis() {
                 <div className="whitespace-nowrap overflow-visible">Sex: <span className="font-semibold text-base ml-1">{readableBody.marital_status}</span></div>
                 <div className="whitespace-nowrap overflow-visible">Foreign worker: <span className="font-semibold text-base ml-1">{readableBody.foreign_worker}</span></div>
               </div>
-              <div className="uppercase font-semibold mt-5 mb-1 text-primary font-serif">Loan Terms</div>
+              <div className="uppercase font-semibold mt-5 mb-1 text-primary ">Loan Terms</div>
               <div className="grid grid-cols-3 gap-10">
                 <div className="whitespace-nowrap overflow-visible">Loan Amount: <span className="font-semibold text-base ml-1">GH₵ {numeral(readableBody.loan_amount).format("0,0.00")}</span></div>
                 <div className="whitespace-nowrap overflow-visible">Duration (months): <span className="font-semibold text-base ml-1">{readableBody.duration_in_months}</span></div>
                 <div className="whitespace-nowrap overflow-visible">Purpose: <span className="font-semibold text-base ml-1">{readableBody.purpose}</span></div>
               </div>
-              <div className="uppercase font-semibold mt-5 mb-1 text-primary font-serif">KEY MEASURES</div>
+              <div className="uppercase font-semibold mt-5 mb-1 text-primary ">KEY MEASURES</div>
               <div className="flex flex-col gap-1">
                 <div className="whitespace-nowrap overflow-visible">Debt Service Coverage Ratio: <span className="font-semibold text-base ml-1">{((readableBody.income * readableBody.duration_in_months) / readableBody.loan_amount).toFixed(2)}</span></div>
                 <div className="whitespace-nowrap overflow-visible">Probability of Default (PD): <span className="font-semibold text-base ml-1">{numeral(response.default_proba).format('0.00%')}</span></div>
                 <div className="whitespace-nowrap overflow-visible">Exposure at Default (EAD): <span className="font-semibold text-base ml-1">GH₵{numeral(readableBody.loan_amount).format('0,0.00')}</span></div>
                 <div className="whitespace-nowrap overflow-visible">Loss Given Default (LGD): <span className="font-semibold text-base ml-1">{numeral((readableBody.loan_amount - recoveries) / readableBody.loan_amount).format('0.00%')}</span></div>
               </div>
-              <div className="uppercase font-semibold mt-5 mb-1 text-primary font-serif">HISTORY</div>
+              <div className="uppercase font-semibold mt-5 mb-1 text-primary ">HISTORY</div>
               <div className="flex flex-col gap-1">
                 <div className="whitespace-nowrap overflow-visible">Number of Existing Loans at this bank: <span className="font-semibold text-base ml-1">{readableBody.number_of_existing_credits_at_this_bank}</span></div>
                 <div className="whitespace-nowrap overflow-visible">Repayment record: <span className="font-semibold text-base ml-1">{readableBody.other_installment_plans}</span></div>
               </div>
-              <div className="uppercase font-semibold mt-5 mb-1 text-primary font-serif">STATISTICS</div>
+              <div className="uppercase font-semibold mt-5 mb-1 text-primary ">STATISTICS</div>
               <div className="flex flex-col gap-1">
                 {Object.keys(data).length !== 0 &&
                   <>
@@ -142,7 +142,7 @@ export default function Analysis() {
         </div>
         <div className="flex-[5] flex flex-col w-full h-full shadow bg-white">
           <div className="flex justify-between items-center px-16 mt-10">
-            <div className="text-surface-light/80 text-lg uppercase font-serif font-bold ">{selectedNav}</div>
+            <div className="text-surface-light/80 text-lg uppercase  font-bold ">{selectedNav}</div>
             {
               selectedNav === "Application Report" &&
               <div onClick={() => setFullScreenReport(true)} className="rounded-lg bg-primary text-white cursor-pointer text-xs py-1 px-2">Full Screen</div>
@@ -359,25 +359,25 @@ export default function Analysis() {
                 <div className="">Sex: <span className="font-semibold text-base ml-1">{readableBody.marital_status}</span></div>
                 <div className="">Foreign worker: <span className="font-semibold text-base ml-1">{readableBody.foreign_worker}</span></div>
               </div>
-              <div className="uppercase font-semibold mt-5 mb-1 text-primary font-serif">Loan Terms</div>
+              <div className="uppercase font-semibold mt-5 mb-1 text-primary ">Loan Terms</div>
               <div className="grid grid-cols-3 gap-10">
                 <div className="">Loan Amount: <span className="font-semibold text-base ml-1">GH₵ {numeral(readableBody.loan_amount).format("0,0.00")}</span></div>
                 <div className="">Duration (months): <span className="font-semibold text-base ml-1">{readableBody.duration_in_months}</span></div>
                 <div className="">Purpose: <span className="font-semibold text-base ml-1">{readableBody.purpose}</span></div>
               </div>
-              <div className="uppercase font-semibold mt-5 mb-1 text-primary font-serif">KEY MEASURES</div>
+              <div className="uppercase font-semibold mt-5 mb-1 text-primary ">KEY MEASURES</div>
               <div className="flex flex-col gap-1">
                 <div className="">Debt Service Coverage Ratio: <span className="font-semibold text-base ml-1">{((readableBody.income * readableBody.duration_in_months) / readableBody.loan_amount).toFixed(2)}</span></div>
                 <div className="">Probability of Default (PD): <span className="font-semibold text-base ml-1">{numeral(response.default_proba).format('0.00%')}</span></div>
                 <div className="">Exposure at Default (EAD): <span className="font-semibold text-base ml-1">GH₵{numeral(readableBody.loan_amount).format('0,0.00')}</span></div>
                 <div className="">Loss Given Default (LGD): <span className="font-semibold text-base ml-1">{numeral((readableBody.loan_amount - recoveries) / readableBody.loan_amount).format('0.00%')}</span></div>
               </div>
-              <div className="uppercase font-semibold mt-5 mb-1 text-primary font-serif">HISTORY</div>
+              <div className="uppercase font-semibold mt-5 mb-1 text-primary ">HISTORY</div>
               <div className="flex flex-col gap-1">
                 <div className="">Number of Existing Loans at this bank: <span className="font-semibold text-base ml-1">{readableBody.number_of_existing_credits_at_this_bank}</span></div>
                 <div className="">Repayment record: <span className="font-semibold text-base ml-1">{readableBody.other_installment_plans}</span></div>
               </div>
-              <div className="uppercase font-semibold mt-5 mb-1 text-primary font-serif">STATISTICS</div>
+              <div className="uppercase font-semibold mt-5 mb-1 text-primary ">STATISTICS</div>
               <div className="flex flex-col gap-1">
                 {Object.keys(data).length !== 0 &&
                   <>

@@ -118,7 +118,7 @@ export default function TermsAdjustmentPage({ forApplicants }) {
   return (
     <div className="bg-white w-full overflow-y-auto px-16 pb-10">
       <>
-        <div className="tracking-wider font-serif text-sm font-bold pt-10 pb-5 flex gap-1">Loan Terms <div className="text-xs font-normal flex items-end">(Editable)</div></div>
+        <div className="tracking-wider  text-sm font-bold pt-10 pb-5 flex gap-1">Loan Terms <div className="text-xs font-normal flex items-end">(Editable)</div></div>
         <div className="w-full grid lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-14">
           <RegularInput disabled={user.role != 'officer'} onChange={(e) => setCreditAmount(e.target.value)} value={credit_amount} label={'Loan amount'} type="number" />
           <RegularInput disabled={user.role != 'officer'} onChange={(e) => setDuration(e.target.value)} value={duration} label={'Loan duration (months)'} type="number" />
@@ -135,7 +135,7 @@ export default function TermsAdjustmentPage({ forApplicants }) {
         {
           ((credit_amount != saved_credit_amount) || (duration != saved_duration)) &&
           <>
-            <div className="tracking-wider font-serif text-sm font-bold pb-5 flex gap-1">Changes</div>
+            <div className="tracking-wider  text-sm font-bold pb-5 flex gap-1">Changes</div>
             <div className="flex gap-10 mb-10">
               {
                 ((credit_amount != saved_credit_amount)) &&
@@ -164,7 +164,7 @@ export default function TermsAdjustmentPage({ forApplicants }) {
         }
 
         <div className="flex gap-3">
-          <div className="tracking-wider font-serif text-sm font-bold">Probability of Default:
+          <div className="tracking-wider  text-sm font-bold">Probability of Default:
             <span className="text-lg ml-2 text-surface-light">{numeral(default_proba).format('0.00%')}</span>
           </div>
           {

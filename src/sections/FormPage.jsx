@@ -29,7 +29,7 @@ export default function FormPage({ forApplicants }) {
     <div className="bg-white w-full overflow-y-auto px-16">
       <Formik initialValues={initialValues}>
         <>
-          <div className="tracking-wider font-serif text-sm font-bold pt-10 pb-2">Personal Details</div>
+          <div className="tracking-wider  text-sm font-bold pt-10 pb-2">Personal Details</div>
 
           <div className="w-full grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
             <FormInput
@@ -51,7 +51,7 @@ export default function FormPage({ forApplicants }) {
             <FormInput disabled label="Foreign Worker" name="foreign_worker" />
           </div>
           <hr className="w-full mt-20 border-t-50 border-black" />
-          <div className="tracking-wider font-serif text-sm font-bold pt-10 pb-2">Financial Details</div>
+          <div className="tracking-wider  text-sm font-bold pt-10 pb-2">Financial Details</div>
           <div className="w-full grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
             {!forApplicants && (
               <FormInput
@@ -76,7 +76,7 @@ export default function FormPage({ forApplicants }) {
           </div>
 
           <hr className="w-full mt-20 border-t-50 border-black" />
-          <div className="tracking-wider font-serif text-sm font-bold pt-10 pb-5">Loan Details</div>
+          <div className="tracking-wider  text-sm font-bold pt-10 pb-5">Loan Details</div>
           <div className="w-full grid lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-20">
             <FormInput disabled name={!forApplicants ? "loan_amount" : "loan_amount_requested"} label={'Loan amount'} type="number" />
             <FormInput disabled name="purpose" />

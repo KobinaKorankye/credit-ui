@@ -89,7 +89,7 @@ export default function FilterRenderer({ filter, filters, setFilters }) {
                         // For 'not', prefix the condition with 'NOT'
                         return (
                             <>
-                                <div className="font-bold font-serif text-xs text-secondary">NOT</div>
+                                <div className="font-bold  text-xs text-secondary">NOT</div>
                                 <FilterRenderer filter={filter.not[0]} filters={filters} setFilters={setFilters} />
                             </>)
                     } else {

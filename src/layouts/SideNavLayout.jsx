@@ -72,22 +72,26 @@ export default function SideNavLayout({ children }) {
   }, [pathname])
 
   return (
-    <div className="flex h-screen w-full font-sans">
+    <div style={{fontFamily: 'Quicksand'}} className="flex h-screen w-full  py-2 px-2">
       <div
-        className={`flex flex-col duration-300 ${isCollapsed ? "w-[5%]" : "w-[15%]"
+        className={`flex flex-col rounded-xl overflow-hidden duration-300 ${isCollapsed ? "w-[5%]" : "w-[15%]"
           } items-end bg-accent`}
       >
         <div
           onClick={toggle}
-          className="w-full bg-surface relative flex justify-start text-lg font-bold items-center text-sm gap-2 font-serif px-5 py-7 text-gray-200"
+          className="w-full bg-surface relative flex justify-start text-lg font-bold items-center text-sm gap-2  px-5 py-7 text-gray-200"
         >
           <TbAnalyze className="text-4xl" />
-          {!isCollapsed && <span style={{fontFamily: 'Quicksand'}} className="whitespace-nowrap overflow-hidden">Credit Analytics</span>}
+          {!isCollapsed && <div style={{fontFamily: 'Quicksand'}} className="whitespace-nowrap overflow-hidden">
+            <div>Credit Analytics</div>
+            <div className="text-xs font-medium">Dashboard</div>
+            </div>}
 
         </div>
         <div
-          className={`flex-1 flex flex-col cursor-pointer w-full font-bold text-sm`}
+          className={`flex-1 flex flex-col cursor-pointer w-full font-medium px-2`}
         >
+          <div className="flex text-sky-200 text-xs px-2 py-2 font-semibold">Main</div>
           {sidenavs.map((nav, index) => (
             <NavItem
               key={index}
@@ -143,7 +147,7 @@ export default function SideNavLayout({ children }) {
             <div>{[...othernavs].find((nav) => nav.path === pathname)?.text}</div>
           </div>}
         </div>
-        <div className="flex w-full items-center font-serif text-xl mt-3 mb-7 text-dark font-bold">
+        <div className="flex w-full items-center  text-xl mt-3 mb-7 text-dark font-bold">
           {[...sidenavs, ...othernavs].find((nav) => nav.path === pathname)?.text}
         </div>
         {children}
