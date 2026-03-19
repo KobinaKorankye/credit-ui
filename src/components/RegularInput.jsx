@@ -12,35 +12,51 @@ export default function RegularInput({
   onChange,
   onBlur,
   disabled,
+  error,
+  ...props
 }) {
   return (
-    <div className={`mt-3 ${boxClassName}`}>
-      <label className={`block text-xs font-semibold mb-1 text-gray-600`} for={name}>
-        {label || name}
-      </label>
-      <div
-        className="flex w-full items-center appearance-none rounded border border-gray-400 w-full py-2 px-3 h-[2.5rem] text-gray-900 
-                leading-tight "
-      >
+    <div className={`space-y-2 ${boxClassName || ''}`}>
+      {label && (
+        <label
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
+          htmlFor={name}
+        >
+          {label}
+        </label>
+      )}
+      <div className="relative">
         {icon && (
-          <FontAwesomeIcon
-            className="mr-4 ml-1 text-gray-600/80"
-            size="md"
-            icon={icon}
-          />
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+            <FontAwesomeIcon
+              className="h-4 w-4 sm:h-4 sm:w-4"
+              icon={icon}
+            />
+          </div>
         )}
         <input
           name={name}
-          type={type}
+          type={type || 'text'}
           disabled={disabled}
           onBlur={onBlur}
           placeholder={placeholder}
           value={value}
           onChange={onChange}
-          className="w-full focus:outline-none focus:shadow-outline bg-transparent text-gray-900"
+          className={`
+            flex h-10 sm:h-9 w-full rounded-md border border-input bg-background px-3 py-2 sm:py-1 text-base sm:text-sm
+            shadow-xs transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium
+            placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1
+            focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 touch-target
+            ${icon ? 'pl-10 sm:pl-9' : ''}
+            ${error ? 'border-destructive focus-visible:ring-destructive' : ''}
+          `}
           id={name}
+          {...props}
         />
       </div>
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
+      )}
     </div>
   );
 }

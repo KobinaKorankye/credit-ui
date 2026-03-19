@@ -1,23 +1,22 @@
-import { useEffect, useState, useRef, useMemo, createContext } from "react";
-import React from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import RegularSelect from "../components/RegularSelect";
 import BarChart from "../components/BarChart";
 import KDEChart from "../components/KDEChart";
 import NormalBarChart from "../components/NormalBarChart";
+import { ChartLoader } from "../components/CustomLoader";
 import {
   catColumns,
   COLUMN_LABELS,
   mappings,
   numericColumns,
 } from "../constants";
-import { useLocation, useNavigate } from "react-router-dom";
-import { convertArrayOfObjectsToDictionary, findQuartile, generateName, getApplicantInfoField, getPredClass } from "../helpers";
-import ReactSwitch from "react-switch";
-import MiniSideNav from "../components/MiniSideNav";
+import { useLocation } from "react-router-dom";
+import { convertArrayOfObjectsToDictionary, findQuartile, getApplicantInfoField, getPredClass } from "../helpers";
+import StickyTopNav from "../components/StickyTopNav";
 import SideNavLayout from "../layouts/SideNavLayout";
 import FormPage from "../sections/FormPage";
 import Button from "../components/Button";
-import { LuCoins, LuFramer, LuPackageOpen, LuPercent, LuTrendingDown } from "react-icons/lu";
+import { LuFramer, LuPackageOpen, LuPercent, LuTrendingDown, LuPrinter } from "react-icons/lu";
 import RiskItem from "../components/RiskItem";
 import numeral from "numeral";
 import Histogram from "../components/HistogramChart";
@@ -27,6 +26,8 @@ import client from "../api/client";
 import { toast } from "react-toastify";
 import TermsAdjustmentPage from "../sections/TermsAdjustmentPage";
 import DataContext from "../contexts/DataContext";
+import Card from "../components/Card";
+import { getRiskLevel, getRiskColor, getRiskThresholds } from "../hooks/useRiskThresholds";
 
 export default function ApplicantAnalysis() {
   const [numColumn, setNumColumn] = useState("credit_amount");
@@ -35,8 +36,6 @@ export default function ApplicantAnalysis() {
   );
   const { response: r, modelBody: m, readableBody: rb } = useLocation().state;
   const [data, setData] = useState({})
-
-  const navigate = useNavigate();
 
   const [showHist4NumGType, setShowHist4NumGType] = useState(false);
   const [globalFI, setGlobalFI] = useState(false);
@@ -64,16 +63,11 @@ export default function ApplicantAnalysis() {
     setLoading(true);
     try {
       const { data } = await client.get("/loanees");
-      // toast.success("Loaded Successfully", {
-      //   position: "top-left",
-      // });
-      console.log('Dataa:', data)
       setData(convertArrayOfObjectsToDictionary(data));
     } catch (error) {
-      toast.error("Failed", {
-        position: "top-left",
+      toast.error("Failed to load loanees", {
+        position: "top-right",
       });
-      console.log(error);
     }
     setLoading(false);
   };
@@ -86,313 +80,646 @@ export default function ApplicantAnalysis() {
     <DataContext.Provider value={{ response, setResponse, modelBody, setModelBody, readableBody, setReadableBody }}>
       <SideNavLayout>
         <Modal isOpen={fullScreenReport}>
-          <div onClick={() => setFullScreenReport(false)} className="w-screen h-screen flex flex-col items-center bg-black/50">
-            <div ref={printRef} onClick={(e) => { e.stopPropagation() }} className="bg-white w-[50%] h-full overflow-y-auto">
-              <div className="flex justify-between text-xl uppercase  font-bold px-16 mt-10">
-                <div>{selectedNav}</div>
+          <div
+            onClick={() => setFullScreenReport(false)}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          >
+            <div
+              ref={printRef}
+              onClick={(e) => { e.stopPropagation() }}
+              className="bg-background w-full max-w-4xl h-full max-h-[90vh] overflow-y-auto rounded-lg shadow-lg"
+            >
+              <div className="sticky top-0 bg-background border-b border-border p-4 lg:p-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl lg:text-2xl font-bold text-foreground">{selectedNav}</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFullScreenReport(false)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    ✕
+                  </Button>
+                </div>
               </div>
-              <div className="px-16 mt-10">
-                <div className="grid grid-cols-3 gap-x-10">
-                  <div className="whitespace-nowrap overflow-visible">Name: <span className="font-semibold text-base ml-1">{readable_info.full_name}</span></div>
-                  <div className="whitespace-nowrap overflow-visible">Age: <span className="font-semibold text-base ml-1">{readable_info.age}</span></div>
-                  <div className="whitespace-nowrap overflow-visible">Sex: <span className="font-semibold text-base ml-1">{readable_info.marital_status}</span></div>
-                  <div className="whitespace-nowrap overflow-visible">Foreign worker: <span className="font-semibold text-base ml-1">{readable_info.foreign_worker}</span></div>
+
+              <div className="p-4 lg:p-6 space-y-6">
+                {/* Personal Information */}
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Name:</span>
+                      <div className="font-semibold text-foreground">{readable_info.full_name}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Age:</span>
+                      <div className="font-semibold text-foreground">{readable_info.age}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Marital Status:</span>
+                      <div className="font-semibold text-foreground">{readable_info.marital_status}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Foreign worker:</span>
+                      <div className="font-semibold text-foreground">{readable_info.foreign_worker}</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="uppercase font-semibold mt-5 mb-1 text-primary ">Loan Terms</div>
-                <div className="grid grid-cols-3 gap-10">
-                  <div className="whitespace-nowrap overflow-visible">Requested Loan Amount: <span className="font-semibold text-base ml-1">GH₵ {numeral(readableBody.loan_amount_requested).format("0,0.00")}</span></div>
-                  <div className="whitespace-nowrap overflow-visible">Proposed Duration (months): <span className="font-semibold text-base ml-1">{readableBody.duration_in_months}</span></div>
-                  <div className="whitespace-nowrap overflow-visible">Purpose: <span className="font-semibold text-base ml-1">{readableBody.purpose}</span></div>
+
+                {/* Loan Terms */}
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-primary">Loan Terms</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Requested Loan Amount:</span>
+                      <div className="font-semibold text-foreground">GH₵ {numeral(readableBody.loan_amount_requested).format("0,0.00")}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Proposed Duration (months):</span>
+                      <div className="font-semibold text-foreground">{readableBody.duration_in_months}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Purpose:</span>
+                      <div className="font-semibold text-foreground">{readableBody.purpose}</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="uppercase font-semibold mt-5 mb-1 text-primary ">KEY MEASURES</div>
-                <div className="flex flex-col gap-1">
-                  <div className="whitespace-nowrap overflow-visible">Debt Service Coverage Ratio: <span className="font-semibold text-base ml-1">{((readable_info.income * readableBody.duration_in_months) / readableBody.loan_amount_requested).toFixed(2)}</span></div>
-                  <div className="whitespace-nowrap overflow-visible">Probability of Default (PD): <span className="font-semibold text-base ml-1">{numeral(response.default_proba).format('0.00%')}</span></div>
-                  <div className="whitespace-nowrap overflow-visible">Exposure at Default (EAD): <span className="font-semibold text-base ml-1">GH₵{numeral(readableBody.loan_amount_requested).format('0,0.00')}</span></div>
-                  <div className="whitespace-nowrap overflow-visible">Loss Given Default (LGD): <span className="font-semibold text-base ml-1">{numeral((readableBody.loan_amount_requested - recoveries) / readableBody.loan_amount_requested).format('0.00%')}</span></div>
+
+                {/* Key Measures */}
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-primary">Key Measures</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Debt Service Coverage Ratio:</span>
+                      <div className="font-semibold text-foreground">{((readable_info.income * readableBody.duration_in_months) / readableBody.loan_amount_requested).toFixed(2)}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Probability of Default (PD):</span>
+                      <div className="font-semibold text-foreground">{numeral(response.default_proba).format('0.00%')}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Exposure at Default (EAD):</span>
+                      <div className="font-semibold text-foreground">GH₵{numeral(readableBody.loan_amount_requested).format('0,0.00')}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Loss Given Default (LGD):</span>
+                      <div className="font-semibold text-foreground">{numeral((readableBody.loan_amount_requested - recoveries) / readableBody.loan_amount_requested).format('0.00%')}</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="uppercase font-semibold mt-5 mb-1 text-primary ">HISTORY</div>
-                <div className="flex flex-col gap-1">
-                  <div className="whitespace-nowrap overflow-visible">Number of Existing Loans at this bank: <span className="font-semibold text-base ml-1">{readableBody.number_of_existing_credits_at_this_bank}</span></div>
-                  <div className="whitespace-nowrap overflow-visible">Repayment record: <span className="font-semibold text-base ml-1">{readableBody.other_installment_plans}</span></div>
+
+                {/* History */}
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-primary">History</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Number of Existing Loans at this bank:</span>
+                      <div className="font-semibold text-foreground">{readableBody.number_of_existing_credits_at_this_bank}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">Repayment record:</span>
+                      <div className="font-semibold text-foreground">{readableBody.other_installment_plans}</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="uppercase font-semibold mt-5 mb-1 text-primary ">STATISTICS</div>
-                <div className="flex flex-col gap-1">
-                  {Object.keys(data).length !== 0 &&
-                    <>
-                      <div className="">Loan amount of <span className="font-semibold text-base ml-1">GH₵{numeral(readableBody.loan_amount_requested).format('0,0.00')}</span> falls in the <span className="font-semibold text-base ml-1">{findQuartile(readableBody.loan_amount_requested, data.credit_amount)}</span></div>
-                      <div className="">Applicant's age of <span className="font-semibold text-base ml-1">{readableBody.age} years</span> falls in the <span className="font-semibold text-base ml-1">{findQuartile(readableBody.age, data.age)}</span></div>
-                    </>
-                  }
-                </div>
+
+                {/* Statistics */}
+                {Object.keys(data).length !== 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-primary">Statistics</h3>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Loan amount comparison:</span>
+                        <div className="font-semibold text-foreground">
+                          GH₵{numeral(readableBody.loan_amount_requested).format('0,0.00')} falls in the {findQuartile(readableBody.loan_amount_requested, data.credit_amount)}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Age comparison:</span>
+                        <div className="font-semibold text-foreground">
+                          {readableBody.age} years falls in the {findQuartile(readableBody.age, data.age)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </Modal>
-        <div className={`flex flex-1`}>
-          <div className="flex-[1] flex items-start">
-            <MiniSideNav
-              navItems={navItems}
-              selected={selectedNav}
-              setSelected={setSelectedNav}
-            />
-          </div>
-          <div className="flex-[5] flex flex-col w-full h-full shadow bg-white">
-            <div className="flex justify-between items-center px-16 mt-10">
-              <div className="text-surface-light/80 text-lg uppercase  font-bold ">{selectedNav}</div>
-              {
-                selectedNav === "Application Report" &&
-                <div onClick={() => setFullScreenReport(true)} className="rounded-lg bg-primary text-white cursor-pointer text-xs py-1 px-2">Full Screen</div>
-              }
+
+        {/* Sticky Top Navigation */}
+        <StickyTopNav
+          navItems={navItems}
+          selected={selectedNav}
+          setSelected={setSelectedNav}
+        />
+
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="responsive-container py-6 space-y-6">
+            {/* Page Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl lg:text-3xl font-bold text-foreground">{selectedNav}</h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {selectedNav === "Applicant Details" && "Review and manage applicant personal and financial information"}
+                  {selectedNav === "Data Analytics" && "Analyze loan assessment data with interactive visualizations"}
+                  {selectedNav === "Feature Importances" && "Understand model predictions through feature analysis"}
+                  {selectedNav === "Risk Parameters" && "Review key risk metrics and adjust parameters"}
+                  {selectedNav === "Application Report" && "Comprehensive application summary and analysis"}
+                  {selectedNav === "Decision" && "Make final loan decisions and adjust terms"}
+                </p>
+              </div>
+              {selectedNav === "Application Report" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFullScreenReport(true)}
+                  className="flex items-center gap-2"
+                >
+                  <LuPrinter className="h-4 w-4" />
+                  <span className="hidden sm:inline">Full Screen</span>
+                </Button>
+              )}
             </div>
-            {Object.keys(response).length != 0 && selectedNav == "Applicant Details" && (
+            {/* Applicant Details Section */}
+            {Object.keys(response).length !== 0 && selectedNav ==="Applicant Details" && (
               <FormPage forApplicants />
             )}
 
-            {Object.keys(response).length != 0 && selectedNav == "Data Analytics" && (
-              <div className="bg-white border-primary w-full h-full flex px-16 flex-col items-center">
-                <div className="w-full gap-5">
-                  {showNumGraph ? (
-                    <div className="flex flex-col">
-                      {/* <div className="text-2xl text-center text-gray-900 font-bold my-2">
-                      Loan Assessment Data Analytics
-                    </div> */}
-                      <div className="flex gap-5">
+            {/* Data Analytics Section */}
+            {Object.keys(response).length !== 0 && selectedNav ==="Data Analytics" && (
+              <div className="space-y-6">
+                {/* Controls Section */}
+                <Card title="Chart Controls">
+                  <div className="space-y-4">
+                    <div className="flex flex-col lg:flex-row lg:items-end gap-4 lg:gap-6">
+                      <div className="flex-1">
                         <RegularSelect
-                          label={"Select numerical feature to plot"}
-                          value={numColumn}
-                          options={numericColumns}
+                          label={showNumGraph ? "Select numerical feature to plot" : "Select categorical feature to plot"}
+                          value={showNumGraph ? numColumn : catColumn}
+                          options={showNumGraph ? numericColumns : catColumns}
                           labelsMap={COLUMN_LABELS}
-                          onChange={(e) => setNumColumn(e.target.value)}
+                          onChange={(e) => showNumGraph ? setNumColumn(e.target.value) : setCatColumn(e.target.value)}
                         />
+                      </div>
 
-                        <div className="flex w-[180px] text-white items-end justify-center">
-                          <div
-                            onClick={() => setShowNumGraph(true)}
-                            className={`flex-1 cursor-pointer ${showNumGraph
-                              ? "bg-teal-600 text-white"
-                              : "bg-slate-200 text-black"
-                              } h-10 flex items-center justify-center text-sm rounded-l-lg`}
-                          >
-                            Numeric
-                          </div>
-                          <div
-                            onClick={() => setShowNumGraph(false)}
-                            className={`flex-1 cursor-pointer ${!showNumGraph
-                              ? "bg-teal-600 text-white"
-                              : "bg-slate-200 text-black"
-                              } h-10 flex items-center justify-center text-sm rounded-r-lg`}
-                          >
-                            Categorical
-                          </div>
-                        </div>
+                      {/* Chart Type Toggle */}
+                      <div className="inline-flex bg-muted rounded-lg p-1">
+                        <button
+                          onClick={() => setShowNumGraph(true)}
+                          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                            showNumGraph
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          Numeric
+                        </button>
+                        <button
+                          onClick={() => setShowNumGraph(false)}
+                          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                            !showNumGraph
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          Categorical
+                        </button>
                       </div>
-                      <div className="flex gap-5 w-full h-[10] text-sm items-center mt-8 mb-10">
-                        <ReactSwitch
-                          onChange={(nextChecked) =>
-                            setShowHist4NumGType(nextChecked)
-                          }
-                          checked={showHist4NumGType}
-                          offColor="#888"
-                          onColor="#0c6"
-                          checkedIcon={false}
-                          uncheckedIcon={false}
-                        />
-                        {showHist4NumGType
-                          ? "Showing Histogram"
-                          : "Showing Probabilty Density Plot"}
-                      </div>
-                      {!showHist4NumGType ? (
-                        <>
-                          {/* <ProbDensityChart height={300} grid data={getKDEData(data, numColumn)} /> */}
-                          <KDEChart
-                            title={COLUMN_LABELS[numColumn]}
-                            columnName={numColumn}
-                            height={300}
-                            showInfo
-                            highlightPoint={modelBody[numColumn]}
-                            columnArray={[...data[numColumn], modelBody[numColumn]]}
-                            classArray={[...(data["class"] || data["class_"]), getPredClass(response)]}
-                          />
-                        </>
-                      ) : (
-                        <>
-                          {/* <HistogramChart height={300}
-                          grid data={getColumnRangeHistogramData(data, numColumn, 8)}
-                        /> */}
-                          <Histogram
-                            title={COLUMN_LABELS[numColumn]}
-                            columnName={numColumn}
-                            numBins={8}
-                            height={300}
-                            showInfo
-                            highlightPoint={modelBody[numColumn]}
-                            columnArray={[...data[numColumn], modelBody[numColumn]]}
-                            classArray={[...(data["class"] || data["class_"]), getPredClass(response)]}
-                          />
-                        </>
-                      )}
                     </div>
-                  ) : (
-                    <div className="flex flex-col">
-                      {/* <div className="text-2xl text-center text-gray-900 font-bold my-2">
-                      Loan Assessment Data Analytics
-                    </div> */}
-                      <div className="flex gap-5">
-                        <RegularSelect
-                          labelsMap={COLUMN_LABELS}
-                          label={"Select categorical feature to plot"}
-                          value={catColumn}
-                          options={catColumns}
-                          onChange={(e) => setCatColumn(e.target.value)}
-                        />
-                        <div className="flex w-[180px] text-white items-end justify-center">
-                          <div
-                            onClick={() => setShowNumGraph(true)}
-                            className={`flex-1 cursor-pointer ${showNumGraph
-                              ? "bg-teal-600 text-white"
-                              : "bg-slate-200 text-black"
-                              } h-10 flex items-center justify-center text-sm rounded-l-lg`}
-                          >
-                            Numeric
-                          </div>
-                          <div
-                            onClick={() => setShowNumGraph(false)}
-                            className={`flex-1 cursor-pointer ${!showNumGraph
-                              ? "bg-teal-600 text-white"
-                              : "bg-slate-200 text-black"
-                              } h-10 flex items-center justify-center text-sm rounded-r-lg`}
-                          >
-                            Categorical
-                          </div>
-                        </div>
+
+                    {/* Chart Display Options for Numeric */}
+                    {showNumGraph && (
+                      <div className="inline-flex bg-muted rounded-lg p-1">
+                        <button
+                          onClick={() => setShowHist4NumGType(false)}
+                          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                            !showHist4NumGType
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          Density Plot
+                        </button>
+                        <button
+                          onClick={() => setShowHist4NumGType(true)}
+                          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                            showHist4NumGType
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          Histogram
+                        </button>
                       </div>
-                      <div className="mt-16">
-                        <NormalBarChart
+                    )}
+                  </div>
+                </Card>
+                {/* Chart Visualization */}
+                <Card title={`${showNumGraph ? COLUMN_LABELS[numColumn] : COLUMN_LABELS[catColumn]} Analysis`}>
+                  <div className="h-[400px] lg:h-[500px]">
+                    {loading ? (
+                      <ChartLoader height={500} />
+                    ) : showNumGraph ? (
+                      !showHist4NumGType ? (
+                        <KDEChart
+                          title={COLUMN_LABELS[numColumn]}
+                          columnName={numColumn}
+                          height={500}
                           showInfo
-                          height={300}
-                          title={COLUMN_LABELS[catColumn]}
-                          highlightPoint={mappings[modelBody[catColumn]]}
-                          columnArray={[
-                            ...(data[catColumn].map((val) => mappings[val])),
-                            mappings[modelBody[catColumn]],
-                          ]}
+                          highlightPoint={modelBody[numColumn]}
+                          columnArray={[...data[numColumn], modelBody[numColumn]]}
                           classArray={[...(data["class"] || data["class_"]), getPredClass(response)]}
-                          columnTitle={catColumn}
                         />
-                      </div>
-                    </div>
-                  )}
-                </div>
+                      ) : (
+                        <Histogram
+                          title={COLUMN_LABELS[numColumn]}
+                          columnName={numColumn}
+                          numBins={8}
+                          height={500}
+                          showInfo
+                          highlightPoint={modelBody[numColumn]}
+                          columnArray={[...data[numColumn], modelBody[numColumn]]}
+                          classArray={[...(data["class"] || data["class_"]), getPredClass(response)]}
+                        />
+                      )
+                    ) : (
+                      <NormalBarChart
+                        showInfo
+                        height={500}
+                        title={COLUMN_LABELS[catColumn]}
+                        highlightPoint={mappings[modelBody[catColumn]]}
+                        columnArray={[
+                          ...(data[catColumn].map((val) => mappings[val])),
+                          mappings[modelBody[catColumn]],
+                        ]}
+                        classArray={[...(data["class"] || data["class_"]), getPredClass(response)]}
+                        columnTitle={catColumn}
+                      />
+                    )}
+                  </div>
+                </Card>
               </div>
             )}
-            {Object.keys(response).length != 0 &&
-              selectedNav == "Feature Importances" && (
-                <div className="bg-white w-full h-full flex px-16 flex-col items-center">
-                  {/* <div className="text-2xl text-gray-900 font-bold my-2">
-                  {globalFI
-                    ? "Global Feature Importances"
-                    : "Feature Influences on Prediction"}
-                </div> */}
-                  <div className="flex gap-5 w-full mt-10 mb-8">
-                    <ReactSwitch
-                      onChange={(nextChecked) => setGlobalFI(nextChecked)}
-                      checked={globalFI}
-                      offColor="#888"
-                      onColor="#0c6"
-                      checkedIcon={false}
-                      uncheckedIcon={false}
-                    />
-                    {globalFI
-                      ? "Showing Global Feature Importances"
-                      : "Showing Local Feature Importances"}
+            {/* Feature Importances Section */}
+            {Object.keys(response).length !== 0 && selectedNav ==="Feature Importances" && (
+              <div className="space-y-6">
+                {/* Controls Section */}
+                <Card title="Feature Importance Settings">
+                  <div className="space-y-2">
+                    <div className="inline-flex bg-muted rounded-lg p-1">
+                      <button
+                        onClick={() => setGlobalFI(false)}
+                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                          !globalFI
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Local
+                      </button>
+                      <button
+                        onClick={() => setGlobalFI(true)}
+                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                          globalFI
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Global
+                      </button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {globalFI
+                        ? "Shows overall feature importance across all predictions"
+                        : "Shows feature influence specific to this applicant"}
+                    </p>
                   </div>
-                  <div className="w-full">
-                    {globalFI ? (
-                      <BarChart height={1500} global data={response.global_importances} />
+                </Card>
+
+                {/* Chart Visualization */}
+                <Card title={globalFI ? "Global Feature Importances" : "Local Feature Importances"}>
+                  <div className="h-[600px] lg:h-[800px]">
+                    {loading ? (
+                      <ChartLoader height={globalFI ? 800 : 600} />
+                    ) : globalFI ? (
+                      <BarChart height={800} global data={response.global_importances} />
                     ) : (
-                      <BarChart height={1000}
+                      <BarChart
+                        height={600}
                         data={response.shap_explanation}
                         bias={response.base_value}
                       />
                     )}
                   </div>
-                </div>
-              )}
-            {Object.keys(response).length != 0 && selectedNav == "Risk Parameters" && (
-              <div className="flex-1 flex flex-col justify-center w-full px-16 items-center">
-                <div className="grid grid-cols-2 gap-8">
-                  <RiskItem icon={LuPercent}
-                    name={`Probability of Default (PD)`}
-                    value={`${numeral(response.default_proba).format('0.00%')}`} />
-                  <RiskItem icon={LuPackageOpen}
-                    name={`Exposure at Default (EAD)`}
-                    value={`GH₵${numeral(readableBody.loan_amount_requested).format('0,0.00')}`} />
-                  <RiskItem icon={LuFramer}
-                    name={`Loss Given Default (LGD)`}
-                    value={`${numeral((readableBody.loan_amount_requested - recoveries) / readableBody.loan_amount_requested).format('0.00%')}`} />
-                  <RiskItem icon={LuTrendingDown}
-                    name={`Expected Loss (EL)`}
-                    value={`GH₵${numeral(
-                      response.default_proba *
-                      readableBody.loan_amount_requested *
-                      ((readableBody.loan_amount_requested - recoveries) / readableBody.loan_amount_requested)).format('0,0.00')}`} />
-                </div>
-                <div className="flex flex-col bg-white items-center justify-center gap-3 py-8 px-12">
-                  <div className="text-base text-teal-600 font-bold">Base Parameters (Editable)</div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold">Recovery Amount</label>
-                    <input className="focus:outline-none px-3 py-2 bg-gray-100" value={recoveries} onChange={(e) => setRecoveries(e.target.value)} type="number" />
-                  </div>
-                </div>
+                </Card>
               </div>
             )}
-            {Object.keys(response).length != 0 && selectedNav == "Application Report" && (
-              <div className="flex-1 relative overflow-y-auto px-16 pb-20 pt-5">
-                {/* <div className="absolute top-0 pt-5"> */}
-                <div className="grid grid-cols-3 gap-x-10">
-                  <div className="">Name of applicant: <span className="font-semibold text-base ml-1">{readableBody.full_name}</span></div>
-                  <div className="">Age: <span className="font-semibold text-base ml-1">{readableBody.age}</span></div>
-                  <div className="">Sex: <span className="font-semibold text-base ml-1">{readableBody.marital_status}</span></div>
-                  <div className="">Foreign worker: <span className="font-semibold text-base ml-1">{readableBody.foreign_worker}</span></div>
+            {/* Risk Parameters Section */}
+            {Object.keys(response).length !== 0 && selectedNav ==="Risk Parameters" && (
+              <div className="space-y-6">
+                {/* Risk Metrics Overview */}
+                <Card title="Risk Assessment Metrics">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+                    <RiskItem
+                      icon={LuPercent}
+                      name="Probability of Default (PD)"
+                      value={`${numeral(response.default_proba).format('0.00%')}`}
+                    />
+                    <RiskItem
+                      icon={LuPackageOpen}
+                      name="Exposure at Default (EAD)"
+                      value={`GH₵${numeral(readableBody.loan_amount_requested).format('0,0.00')}`}
+                    />
+                    <RiskItem
+                      icon={LuFramer}
+                      name="Loss Given Default (LGD)"
+                      value={`${numeral((readableBody.loan_amount_requested - recoveries) / readableBody.loan_amount_requested).format('0.00%')}`}
+                    />
+                    <RiskItem
+                      icon={LuTrendingDown}
+                      name="Expected Loss (EL)"
+                      value={`GH₵${numeral(
+                        response.default_proba *
+                        readableBody.loan_amount_requested *
+                        ((readableBody.loan_amount_requested - recoveries) / readableBody.loan_amount_requested)
+                      ).format('0,0.00')}`}
+                    />
+                  </div>
+                </Card>
+
+                {/* Risk Calculation Details */}
+                <Card title="Risk Calculation Breakdown">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-foreground">Calculation Formula</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="p-3 bg-muted/30 rounded-lg">
+                          <span className="font-medium">Expected Loss (EL) = </span>
+                          <span>PD × EAD × LGD</span>
+                        </div>
+                        <div className="p-3 bg-muted/30 rounded-lg">
+                          <span className="font-medium">Loss Given Default (LGD) = </span>
+                          <span>(EAD - Recovery Amount) / EAD</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-foreground">Current Values</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between p-2 bg-muted/20 rounded">
+                          <span>Loan Amount:</span>
+                          <span className="font-medium">GH₵{numeral(readableBody.loan_amount_requested).format('0,0.00')}</span>
+                        </div>
+                        <div className="flex justify-between p-2 bg-muted/20 rounded">
+                          <span>Recovery Amount:</span>
+                          <span className="font-medium">GH₵{numeral(recoveries).format('0,0.00')}</span>
+                        </div>
+                        <div className="flex justify-between p-2 bg-muted/20 rounded">
+                          <span>Default Probability:</span>
+                          <span className="font-medium">{numeral(response.default_proba).format('0.00%')}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Editable Parameters */}
+                <Card title="Adjustable Parameters">
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm font-medium text-foreground">Recovery Amount (GH₵)</label>
+                      <div className="flex gap-2">
+                        <input
+                          className="flex h-10 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          value={recoveries}
+                          onChange={(e) => setRecoveries(e.target.value)}
+                          type="number"
+                          placeholder="Enter recovery amount"
+                          min="0"
+                          max={readableBody.loan_amount_requested}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setRecoveries(0)}
+                        >
+                          Reset
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Adjust the expected recovery amount in case of default. This affects LGD and EL calculations.
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            )}
+            {/* Application Report Section */}
+            {Object.keys(response).length !== 0 && selectedNav ==="Application Report" && (
+              <div className="space-y-6">
+                {/* Application Summary */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Personal Information */}
+                  <Card title="Personal Information">
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Full Name</span>
+                        <div className="font-semibold text-foreground">{readableBody.full_name}</div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Age</span>
+                        <div className="font-semibold text-foreground">{readableBody.age} years</div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Marital Status</span>
+                        <div className="font-semibold text-foreground">{readableBody.marital_status}</div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Foreign Worker</span>
+                        <div className="font-semibold text-foreground">{readableBody.foreign_worker}</div>
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* Loan Details */}
+                  <Card title="Loan Application">
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Requested Amount</span>
+                        <div className="font-semibold text-foreground text-lg">GH₵ {numeral(readableBody.loan_amount_requested).format("0,0.00")}</div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Duration</span>
+                        <div className="font-semibold text-foreground">{readableBody.duration_in_months} months</div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Purpose</span>
+                        <div className="font-semibold text-foreground">{readableBody.purpose}</div>
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* Risk Summary */}
+                  <Card title="Risk Assessment">
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Default Probability</span>
+                        <div className={`font-semibold text-lg ${getRiskColor(response.default_proba)}`}>
+                          {numeral(response.default_proba).format('0.00%')}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Risk Level</span>
+                        <div className={`font-semibold ${getRiskColor(response.default_proba)}`}>
+                          {getRiskLevel(response.default_proba).label}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Expected Loss</span>
+                        <div className="font-semibold text-foreground">
+                          GH₵{numeral(response.default_proba * readableBody.loan_amount_requested * ((readableBody.loan_amount_requested - recoveries) / readableBody.loan_amount_requested)).format('0,0.00')}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
                 </div>
-                <div className="uppercase font-semibold mt-5 mb-1 text-primary ">Loan Terms</div>
-                <div className="grid grid-cols-3 gap-10">
-                  <div className="">Loan Amount: <span className="font-semibold text-base ml-1">GH₵ {numeral(readableBody.loan_amount_requested).format("0,0.00")}</span></div>
-                  <div className="">Duration (months): <span className="font-semibold text-base ml-1">{readableBody.duration_in_months}</span></div>
-                  <div className="">Purpose: <span className="font-semibold text-base ml-1">{readableBody.purpose}</span></div>
+
+                {/* Detailed Analysis */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Financial Metrics */}
+                  <Card title="Financial Analysis">
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Debt Service Coverage Ratio</span>
+                        <div className="font-semibold text-foreground text-lg">
+                          {((readableBody.income * readableBody.duration_in_months) / readableBody.loan_amount_requested).toFixed(2)}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Higher ratios indicate better ability to service debt
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Monthly Income</span>
+                        <div className="font-semibold text-foreground">
+                          GH₵{numeral(readableBody.income).format('0,0.00')}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Loan-to-Income Ratio</span>
+                        <div className="font-semibold text-foreground">
+                          {((readableBody.loan_amount_requested / (readableBody.income * 12)) * 100).toFixed(1)}%
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* Credit History */}
+                  <Card title="Credit History & Background">
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Existing Credits</span>
+                        <div className="font-semibold text-foreground">
+                          {readableBody.number_of_existing_credits_at_this_bank} active loan(s)
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Repayment History</span>
+                        <div className="font-semibold text-foreground">{readableBody.other_installment_plans}</div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Credit History</span>
+                        <div className="font-semibold text-foreground">{readableBody.credit_history}</div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-sm text-muted-foreground">Employment Status</span>
+                        <div className="font-semibold text-foreground">{readableBody.job}</div>
+                      </div>
+                    </div>
+                  </Card>
                 </div>
-                <div className="uppercase font-semibold mt-5 mb-1 text-primary ">KEY MEASURES</div>
-                <div className="flex flex-col gap-1">
-                  <div className="">Debt Service Coverage Ratio: <span className="font-semibold text-base ml-1">{((readableBody.income * readableBody.duration_in_months) / readableBody.loan_amount_requested).toFixed(2)}</span></div>
-                  <div className="">Probability of Default (PD): <span className="font-semibold text-base ml-1">{numeral(response.default_proba).format('0.00%')}</span></div>
-                  <div className="">Exposure at Default (EAD): <span className="font-semibold text-base ml-1">GH₵{numeral(readableBody.loan_amount_requested).format('0,0.00')}</span></div>
-                  <div className="">Loss Given Default (LGD): <span className="font-semibold text-base ml-1">{numeral((readableBody.loan_amount_requested - recoveries) / readableBody.loan_amount_requested).format('0.00%')}</span></div>
-                </div>
-                <div className="uppercase font-semibold mt-5 mb-1 text-primary ">HISTORY</div>
-                <div className="flex flex-col gap-1">
-                  <div className="">Number of Existing Loans at this bank: <span className="font-semibold text-base ml-1">{readableBody.number_of_existing_credits_at_this_bank}</span></div>
-                  <div className="">Repayment record: <span className="font-semibold text-base ml-1">{readableBody.other_installment_plans}</span></div>
-                </div>
-                <div className="uppercase font-semibold mt-5 mb-1 text-primary ">STATISTICS</div>
-                <div className="flex flex-col gap-1">
-                  {Object.keys(data).length !== 0 &&
-                    <>
-                      <div className="">Loan amount of <span className="font-semibold text-base ml-1">GH₵{numeral(readableBody.loan_amount_requested).format('0,0.00')}</span> falls in the <span className="font-semibold text-base ml-1">{findQuartile(readableBody.loan_amount_requested, data.credit_amount)}</span></div>
-                      <div className="">Applicant's age of <span className="font-semibold text-base ml-1">{readableBody.age} years</span> falls in the <span className="font-semibold text-base ml-1">{findQuartile(readableBody.age, data.age)}</span></div>
-                    </>
-                  }
-                </div>
-                {/* </div> */}
+
+                {/* Comparative Statistics */}
+                {Object.keys(data).length !== 0 && (
+                  <Card title="Comparative Analysis">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <h4 className="font-medium text-foreground">Loan Amount Comparison</h4>
+                        <div className="p-4 bg-muted/30 rounded-lg">
+                          <div className="text-sm text-muted-foreground mb-1">Requested Amount</div>
+                          <div className="font-semibold text-lg">GH₵{numeral(readableBody.loan_amount_requested).format('0,0.00')}</div>
+                          <div className="text-sm text-muted-foreground mt-2">
+                            Falls in the <span className="font-medium text-foreground">{findQuartile(readableBody.loan_amount_requested, data.credit_amount)}</span> of historical loan amounts
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h4 className="font-medium text-foreground">Age Demographics</h4>
+                        <div className="p-4 bg-muted/30 rounded-lg">
+                          <div className="text-sm text-muted-foreground mb-1">Applicant Age</div>
+                          <div className="font-semibold text-lg">{readableBody.age} years</div>
+                          <div className="text-sm text-muted-foreground mt-2">
+                            Falls in the <span className="font-medium text-foreground">{findQuartile(readableBody.age, data.age)}</span> of applicant ages
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
+                {/* Recommendation Summary */}
+                <Card title="Assessment Summary">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-foreground">Risk Assessment</h4>
+                      <div className={`p-4 rounded-lg border-l-4 ${
+                        getRiskLevel(response.default_proba).label === 'High Risk'
+                          ? 'bg-red-50 border-red-500 dark:bg-red-950/20'
+                          : getRiskLevel(response.default_proba).label === 'Medium Risk'
+                            ? 'bg-yellow-50 border-yellow-500 dark:bg-yellow-950/20'
+                            : 'bg-green-50 border-green-500 dark:bg-green-950/20'
+                      }`}>
+                        <div className="font-medium">
+                          {getRiskLevel(response.default_proba).label} Application
+                        </div>
+                        <div className="text-sm mt-1">
+                          Default probability: {numeral(response.default_proba).format('0.00%')}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-foreground">Key Factors</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span>Debt Service Coverage:</span>
+                          <span className="font-medium">{((readableBody.income * readableBody.duration_in_months) / readableBody.loan_amount_requested).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Credit History:</span>
+                          <span className="font-medium">{readableBody.credit_history}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Existing Credits:</span>
+                          <span className="font-medium">{readableBody.number_of_existing_credits_at_this_bank}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
               </div>
             )}
 
-            {Object.keys(response).length != 0 && selectedNav == "Decision" && (
+            {/* Decision Section */}
+            {Object.keys(response).length !== 0 && selectedNav ==="Decision" && (
               <TermsAdjustmentPage />
             )}
           </div>
-
-
         </div>
       </SideNavLayout>
     </DataContext.Provider>

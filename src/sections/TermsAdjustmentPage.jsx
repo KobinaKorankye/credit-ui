@@ -1,31 +1,20 @@
-import { useContext, useEffect, useMemo, useState } from "react";
-import * as Yup from "yup";
-import { Formik } from "formik";
-import Submit from "../components/formik/Submit";
+import { useContext, useState } from "react";
 import client from "../api/client";
 import { toast } from "react-toastify";
-import React from "react";
-import FormInput from "../components/formik/FormInput";
-import BarChart from "../components/BarChart";
+import { getRiskLevel, getRiskColor } from "../hooks/useRiskThresholds";
 import RegularInput from "../components/RegularInput";
-import RegularSelect from "../components/RegularSelect";
-import KDEChart from "../components/KDEChart";
-// import data from "../data/data.json";
-import NormalBarChart from "../components/NormalBarChart";
-import { mappings } from "../constants";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchGraphData } from "../store/graphDataSlice";
-import { useLocation, useNavigate } from "react-router-dom";
-import { generateName, getApplicantInfoField } from "../helpers";
+import { useNavigate } from "react-router-dom";
 import Button from "../components/Button";
 import numeral from "numeral";
 import { BsArrowRight } from "react-icons/bs";
+import { LuRefreshCw, LuSave, LuCheck, LuX, LuInfo } from "react-icons/lu";
 import DataContext from "../contexts/DataContext";
 import RegularTextArea from "../components/RegularTextArea";
 import UserContext from "../contexts/UserContext";
 import { format } from "date-fns";
+import Card from "../components/Card";
 
-export default function TermsAdjustmentPage({ forApplicants }) {
+export default function TermsAdjustmentPage() {
   const { response, setResponse, modelBody, setModelBody, readableBody, setReadableBody } = useContext(DataContext);
   const { user } = useContext(UserContext);
   const saved_credit_amount = readableBody.loan_amount_requested
@@ -35,27 +24,17 @@ export default function TermsAdjustmentPage({ forApplicants }) {
   const [default_proba, setDefaultProba] = useState(response.default_proba)
   const [loading, setLoading] = useState(false)
   const [notes, setNotes] = useState(readableBody[`${user.role}_notes`])
-  // const [editDisabled, setEditDisabled] = useState(true)
-
   const navigate = useNavigate()
-
-  // const initialValues = { ...readableBody, ...getApplicantInfoField(readableBody) }
-  // console.log('Initial values', initialValues, modelBody);
 
   const getPrediction = async () => {
     setLoading(true);
     try {
       const { data } = await client.post("/predict", { ...modelBody, duration, credit_amount });
       setDefaultProba(data[0].default_proba)
-      console.log(data);
-      toast.success("Successful", {
-        position: "top-left",
-      });
     } catch (error) {
       toast.error("Failed", {
-        position: "top-left",
+        position: "top-right",
       });
-      console.log(error);
     }
     setLoading(false);
   };
@@ -64,16 +43,11 @@ export default function TermsAdjustmentPage({ forApplicants }) {
     setLoading(true);
     try {
       const { data } = await client.put(`/loan-applications/decision/${readableBody.id}`, { decision, user_id: user.id, [`${user.role}_notes`]: notes });
-      console.log(data);
-      toast.success("Successful", {
-        position: "top-left",
-      });
       navigate('/applicants')
     } catch (error) {
       toast.error("Failed", {
-        position: "top-left",
+        position: "top-right",
       });
-      console.log(error);
     }
     setLoading(false);
   };
@@ -83,18 +57,13 @@ export default function TermsAdjustmentPage({ forApplicants }) {
     try {
       const { data: d } = await client.post("/predict", { ...modelBody, duration, credit_amount });
       const { data } = await client.put(`/loan-applications/${readableBody.id}`, { duration_in_months: duration, loan_amount_requested: credit_amount, [`${user.role}_notes`]: notes });
-      console.log(data);
       setResponse(d[0])
       setModelBody({ ...modelBody, credit_amount, duration })
       setReadableBody({ ...readableBody, duration_in_months: duration, loan_amount_requested: credit_amount, [`${user.role}_notes`]: notes })
-      toast.success("Successful", {
-        position: "top-left",
-      });
     } catch (error) {
       toast.error("Failed", {
-        position: "top-left",
+        position: "top-right",
       });
-      console.log(error);
     }
     setLoading(false);
   };
@@ -114,128 +83,220 @@ export default function TermsAdjustmentPage({ forApplicants }) {
     },
   }
 
-
   return (
-    <div className="bg-white w-full overflow-y-auto px-16 pb-10">
-      <>
-        <div className="tracking-wider  text-sm font-bold pt-10 pb-5 flex gap-1">Loan Terms <div className="text-xs font-normal flex items-end">(Editable)</div></div>
-        <div className="w-full grid lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-14">
-          <RegularInput disabled={user.role != 'officer'} onChange={(e) => setCreditAmount(e.target.value)} value={credit_amount} label={'Loan amount'} type="number" />
-          <RegularInput disabled={user.role != 'officer'} onChange={(e) => setDuration(e.target.value)} value={duration} label={'Loan duration (months)'} type="number" />
-          <div className="flex pt-8 gap-4">
-            {
-              ((credit_amount != readableBody.loan_amount_requested) || (duration != readableBody.duration_in_months)) &&
-              <div onClick={() => {
-                setCreditAmount(readableBody.loan_amount_requested); setDuration(readableBody.duration_in_months); setDefaultProba(response.default_proba)
-              }} className="flex items-center px-4 py-1 rounded bg-[#222] text-white cursor-pointer">Reset</div>
-            }
+    <div className="space-y-6">
+      {/* Loan Terms Adjustment */}
+      <Card title="Loan Terms Adjustment">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+            <RegularInput
+              disabled={user.role !== 'officer'}
+              onChange={(e) => setCreditAmount(e.target.value)}
+              value={credit_amount}
+              label={'Loan Amount (GH₵)'}
+              type="number"
+            />
+            <RegularInput
+              disabled={user.role !== 'officer'}
+              onChange={(e) => setDuration(e.target.value)}
+              value={duration}
+              label={'Loan Duration (months)'}
+              type="number"
+            />
+            <div className="flex items-end gap-2">
+              {((credit_amount != readableBody.loan_amount_requested) || (duration != readableBody.duration_in_months)) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setCreditAmount(readableBody.loan_amount_requested);
+                    setDuration(readableBody.duration_in_months);
+                    setDefaultProba(response.default_proba)
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <LuRefreshCw className="h-4 w-4" />
+                  Reset
+                </Button>
+              )}
+            </div>
           </div>
+
+          {user.role !== 'officer' && (
+            <div className="p-3 bg-muted/30 rounded-lg border border-muted">
+              <p className="text-sm text-muted-foreground">
+                <LuInfo className="inline h-4 w-4 mr-1" />
+                Only loan officers can modify loan terms
+              </p>
+            </div>
+          )}
         </div>
+      </Card>
 
-        {
-          ((credit_amount != saved_credit_amount) || (duration != saved_duration)) &&
-          <>
-            <div className="tracking-wider  text-sm font-bold pb-5 flex gap-1">Changes</div>
-            <div className="flex gap-10 mb-10">
-              {
-                ((credit_amount != saved_credit_amount)) &&
-                <div>
-                  <div>Loan Amount</div>
-                  <div className="flex gap-2">
-                    <div>{saved_credit_amount}</div>
-                    <div><BsArrowRight size={20} /></div>
-                    <div>{credit_amount}</div>
-                  </div>
-                </div>
-              }
-              {
-                ((duration != saved_duration)) &&
-                <div>
-                  <div>Loan Duration</div>
-                  <div className="flex gap-2">
-                    <div>{saved_duration}</div>
-                    <div><BsArrowRight size={20} /></div>
-                    <div>{duration}</div>
-                  </div>
-                </div>
-              }
-            </div>
-          </>
-        }
-
-        <div className="flex gap-3">
-          <div className="tracking-wider  text-sm font-bold">Probability of Default:
-            <span className="text-lg ml-2 text-surface-light">{numeral(default_proba).format('0.00%')}</span>
-          </div>
-          {
-            ((credit_amount != saved_credit_amount) || (duration != saved_duration)) &&
-            (
-              !loading ?
-                <div onClick={getPrediction} className="flex px-2 py-1 bg-primary/30 rounded hover:bg-primary hover:text-white cursor-pointer">Re-evaluate</div>
-                :
-                <div className="flex px-2 py-1 bg-primary/30 rounded">Re-evaluating...</div>
-            )
-          }
-        </div>
-
-        <div className="md:grid mt-20 grid-cols-3">
-          <div className="col-span-2">
-            <RegularTextArea disabled={user.role != 'officer'} value={user.role == 'officer' ? notes : readableBody[`officer_notes`]} label={'Officer Notes'} placeholder={'Enter notes/comments here'} onChange={(e) => { setNotes(e.target.value) }} />
-          </div>
-        </div>
-        {
-          user.role != 'officer' &&
-          <div className="md:grid mt-20 grid-cols-3">
-            <div className="col-span-2">
-              <RegularTextArea disabled={user.role != 'reviewer'} value={user.role == 'reviewer' ? notes : readableBody[`reviewer_notes`]} label={'Reviewer Notes'} placeholder={'Enter notes/comments here'} onChange={(e) => { setNotes(e.target.value) }} />
-            </div>
-          </div>
-        }
-        {
-          user.role == 'approver' &&
-          <div className="md:grid mt-20 grid-cols-3">
-            <div className="col-span-2">
-              <RegularTextArea disabled={readableBody['decision_date']} value={user.role == 'approver' ? notes : readableBody[`approver_notes`]} label={'Approver Notes'} placeholder={'Enter notes/comments here'} onChange={(e) => { setNotes(e.target.value) }} />
-            </div>
-          </div>
-        }
-
-        <div>
-          {!readableBody['decision_date'] ?
-            <div className="flex mt-5">
-              {
-                !loading ?
-                  (
-                    ((credit_amount != saved_credit_amount) || (duration != saved_duration) || (notes && notes != readableBody[`${user.role}_notes`])) ?
-                      <div onClick={updateApplication} className="flex cursor-pointer px-2 py-2 bg-primary text-white rounded">Save Changes</div>
-                      :
-                      <div className="flex gap-4">
-                        <div onClick={() => { makeDecision(decisions[user.role].rejected) }} className="flex px-4 cursor-pointer py-2 bg-secondary text-white rounded">Reject</div>
-                        <div onClick={() => { makeDecision(decisions[user.role].approved) }} className="flex px-4 cursor-pointer py-2 bg-surface-light text-white rounded">Approve</div>
-                      </div>
-                  )
-                  :
-                  <div className="flex px-4 py-2 bg-gray-300 text-white rounded">Loading...</div>
-              }
-
-            </div>
-            :
-            <>
-              <div className="text-base font-bold mt-10">Final Decision</div>
-              <div className={'flex mt-3'}>
-                <div className={`uppercase py-3 px-14 font-bold border-2 ${readableBody['decision'] == 'approved' ? 'border-surface-light text-surface-light' : 'border-secondary text-secondary'}`}>
-                  {readableBody['decision']}
+      {/* Changes Summary */}
+      {((credit_amount != saved_credit_amount) || (duration != saved_duration)) && (
+        <Card title="Proposed Changes">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {(credit_amount != saved_credit_amount) && (
+              <div className="space-y-2">
+                <h4 className="font-medium text-foreground">Loan Amount</h4>
+                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                  <span className="font-medium">GH₵{numeral(saved_credit_amount).format('0,0.00')}</span>
+                  <BsArrowRight className="text-muted-foreground" />
+                  <span className="font-medium text-primary">GH₵{numeral(credit_amount).format('0,0.00')}</span>
                 </div>
               </div>
-              <div className="text-base font-bold mt-5">Decision Date</div>
-              <div className="text-base">
+            )}
+            {(duration != saved_duration) && (
+              <div className="space-y-2">
+                <h4 className="font-medium text-foreground">Loan Duration</h4>
+                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                  <span className="font-medium">{saved_duration} months</span>
+                  <BsArrowRight className="text-muted-foreground" />
+                  <span className="font-medium text-primary">{duration} months</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {/* Risk Assessment */}
+      <Card title="Risk Assessment">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-1">
+            <span className="text-sm text-muted-foreground">Probability of Default</span>
+            <div className={`text-2xl font-bold ${getRiskColor(default_proba)}`}>
+              {numeral(default_proba).format('0.00%')}
+            </div>
+            <div className={`text-sm font-medium ${getRiskColor(default_proba)}`}>
+              {getRiskLevel(default_proba).label}
+            </div>
+          </div>
+
+          {((credit_amount != saved_credit_amount) || (duration != saved_duration)) && (
+            <Button
+              onClick={getPrediction}
+              disabled={loading}
+              className="flex items-center gap-2"
+            >
+              <LuRefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              {loading ? 'Re-evaluating...' : 'Re-evaluate Risk'}
+            </Button>
+          )}
+        </div>
+      </Card>
+
+      {/* Notes and Comments */}
+      <div className="space-y-6">
+        {/* Officer Notes */}
+        <Card title="Officer Notes">
+          <RegularTextArea
+            disabled={user.role !== 'officer'}
+            value={user.role === 'officer' ? notes : readableBody[`officer_notes`]}
+            label={'Comments and Analysis'}
+            placeholder={'Enter detailed notes about the application assessment...'}
+            onChange={(e) => { setNotes(e.target.value) }}
+            rows={4}
+          />
+        </Card>
+
+        {/* Reviewer Notes */}
+        {user.role !== 'officer' && (
+          <Card title="Reviewer Notes">
+            <RegularTextArea
+              disabled={user.role !== 'reviewer'}
+              value={user.role === 'reviewer' ? notes : readableBody[`reviewer_notes`]}
+              label={'Review Comments'}
+              placeholder={'Enter review comments and recommendations...'}
+              onChange={(e) => { setNotes(e.target.value) }}
+              rows={4}
+            />
+          </Card>
+        )}
+
+        {/* Approver Notes */}
+        {user.role === 'approver' && (
+          <Card title="Approver Notes">
+            <RegularTextArea
+              disabled={readableBody['decision_date']}
+              value={user.role === 'approver' ? notes : readableBody[`approver_notes`]}
+              label={'Final Decision Comments'}
+              placeholder={'Enter final approval/rejection reasoning...'}
+              onChange={(e) => { setNotes(e.target.value) }}
+              rows={4}
+            />
+          </Card>
+        )}
+      </div>
+
+      {/* Decision Actions */}
+      <Card title="Decision Actions">
+        {!readableBody['decision_date'] ? (
+          <div className="space-y-4">
+            {((credit_amount != saved_credit_amount) || (duration != saved_duration) || (notes && notes != readableBody[`${user.role}_notes`])) ? (
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={updateApplication}
+                  disabled={loading}
+                  className="flex items-center gap-2"
+                >
+                  <LuSave className="h-4 w-4" />
+                  {loading ? 'Saving...' : 'Save Changes'}
+                </Button>
+                <p className="text-sm text-muted-foreground flex items-center">
+                  Save changes before making final decision
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  variant="destructive"
+                  onClick={() => { makeDecision(decisions[user.role].rejected) }}
+                  disabled={loading}
+                  className="flex items-center gap-2"
+                >
+                  <LuX className="h-4 w-4" />
+                  Reject Application
+                </Button>
+                <Button
+                  onClick={() => { makeDecision(decisions[user.role].approved) }}
+                  disabled={loading}
+                  className="flex items-center gap-2"
+                >
+                  <LuCheck className="h-4 w-4" />
+                  Approve Application
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h4 className="font-medium text-foreground">Final Decision</h4>
+              <div className={`inline-flex items-center px-4 py-2 rounded-lg font-medium text-sm border-2 ${
+                readableBody['decision'] === 'approved'
+                  ? 'border-green-500 text-green-700 bg-green-50 dark:bg-green-950/20'
+                  : 'border-red-500 text-red-700 bg-red-50 dark:bg-red-950/20'
+              }`}>
+                {readableBody['decision'] === 'approved' ? (
+                  <LuCheck className="h-4 w-4 mr-2" />
+                ) : (
+                  <LuX className="h-4 w-4 mr-2" />
+                )}
+                {readableBody['decision'].toUpperCase()}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="font-medium text-foreground">Decision Date</h4>
+              <p className="text-foreground">
                 {readableBody['decision_date'] ? format(new Date(readableBody['decision_date']), "do MMMM, yyyy h:mm a") : ''}
-              </div>
-            </>
-          }
-        </div>
-
-      </>
+              </p>
+            </div>
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

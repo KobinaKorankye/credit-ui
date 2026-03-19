@@ -4,13 +4,14 @@ import Table from "../components/Table";
 import SideNavLayout from "../layouts/SideNavLayout";
 import { applicationTypes, columnNames } from "../constants";
 import client from "../api/client";
-import { getApplicantInfoField, getPredictionMUI, transformApplicationToModelApiObject, transformModelApiObject } from "../helpers";
+import { getApplicantInfoField, transformModelApiObject } from "../helpers";
 import { useNavigate } from "react-router-dom";
 import MUIDataTable from "../components/MUITable";
 import Loader from "../loader/Loader";
 import SearchBar from "../components/SearchBar";
 import ActionButton from "../components/ActionButton";
 import Modal from "../components/modals/Modal";
+import RegularSelectAlt from "../components/RegularSelectAlt";
 import { capitalize } from "@mui/material";
 
 const classes = ["Defaulted", "Repaid"];
@@ -66,14 +67,13 @@ export default function Loans() {
         try {
             const { data } = await client.get(`/loans?outcome=${loansType}`);
             // toast.success("Loaded Successfully", {
-            //   position: "top-left",
+            //   position: "top-right",
             // });
             setLoans(data);
         } catch (error) {
             toast.error("Failed", {
-                position: "top-left",
+                position: "top-right",
             });
-            console.log(error);
         }
         setLoading(false);
     };
@@ -83,18 +83,13 @@ export default function Loans() {
         setLoading(true);
         try {
             const { data } = await client.post("/predict", body);
-            //   toast.success("Sent Successfully", {
-            //     position: "top-left",
-            //   });
             navigate("/analysis", {
                 state: { modelBody: body, response: data[0], readableBody: params.row },
             });
-            console.log(data);
         } catch (error) {
             toast.error("Failed", {
-                position: "top-left",
+                position: "top-right",
             });
-            console.log(error);
         }
         setLoading(false);
     };
@@ -105,6 +100,12 @@ export default function Loans() {
     }, [loansType]);
 
     const LOAN_TYPES = ["pending", "completed", "defaulted", "repaid"]
+
+    // Prepare options for the select dropdown
+    const loanTypeOptions = LOAN_TYPES.map(type => ({
+        value: type,
+        label: capitalize(type)
+    }));
 
     return (
         <SideNavLayout>
@@ -122,58 +123,45 @@ export default function Loans() {
                     </div>
                 </div>
             </Modal>
-            <div className="flex-1 relative">
-                <div className="absolute w-full h-full top-0 flex flex-col bg-white rounded">
-                    {/* <div className="flex gap-5 items-center">
-            <div className="md:w-[50%]">
-              <SearchBar
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                // placeholder={`Type to search by ${filter}`}
-              />
-            </div>
-          </div> */}
-                    {loading ? (
-                        <div className="bg-white h-[623px] flex flex-col items-center justify-center w-full overflow-auto">
-                            <Loader height={200} width={200} />
-                            <div className="font-semibold">Loading...</div>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="flex px-4 py-2">
-                                <SearchBar placeholder={'Applicant name'} />
+            <div className="flex flex-col h-full">
+                {/* Header Controls — always visible */}
+                <div className="flex flex-col lg:flex-row gap-4 px-4 py-2">
+                    <div className="flex-1 lg:max-w-md">
+                        <SearchBar value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder={'Applicant name'} />
+                    </div>
 
-                                <div className="flex ml-auto gap-10 mr-10">
-                                    {
-                                        LOAN_TYPES.map((loan_type) => (
-                                            <div onClick={() => { setLoansType(loan_type) }} className={`flex items-center mr-auto gap-2 text-dark cursor-pointer hover:text-primary text-[0.9vw] justify-between`}>
-                                                <div>{capitalize(loan_type)}</div>
-                                                <input
-                                                    type="radio"
-                                                    value={loan_type}
-                                                    checked={loansType === loan_type}
-                                                    onChange={() => { setLoansType(loan_type) }}
-                                                    style={{ accentColor: "blue" }}
-                                                    className=" w-4 h-4 border-[1px]"
-                                                />
-                                            </div>
-                                        ))
-                                    }
-                                </div>
-                            </div>
-                            <div className="h-full">
-                                <MUIDataTable
-                                    columns={columns}
-                                    pageSize={10}
-                                    onRowClick={getPredictionMUI}
-                                    rows={loans.filter((loan) =>
-                                        loan.full_name.toLowerCase().search(searchText.toLowerCase()) !== -1
-                                    )}
-                                />
-                            </div>
-                        </>
-                    )}
+                    <div className="flex items-center gap-3 ml-auto">
+                        <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+                            Filter by:
+                        </span>
+                        <RegularSelectAlt
+                            name="loanType"
+                            value={loansType}
+                            options={loanTypeOptions}
+                            onChange={(e) => setLoansType(e.target.value)}
+                            boxClassName="min-w-[140px]"
+                        />
+                    </div>
                 </div>
+
+                {/* Content */}
+                {loading ? (
+                    <div className="flex-1 flex items-center justify-center min-h-[300px]">
+                        <Loader />
+                    </div>
+                ) : (
+                    <div className="flex-1 min-h-0">
+                        <MUIDataTable
+                            columns={columns}
+                            pageSize={10}
+                            onRowClick={getPredictionMUI}
+                            rows={loans.filter((loan) =>
+                                loan.full_name.toLowerCase().search(searchText.toLowerCase()) !== -1
+                            )}
+                            loading={loading}
+                        />
+                    </div>
+                )}
             </div>
         </SideNavLayout>
     );

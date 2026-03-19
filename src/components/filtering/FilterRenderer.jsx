@@ -44,10 +44,10 @@ export default function FilterRenderer({ filter, filters, setFilters }) {
                             (subFilter.operand && subFilter.operation) &&
                             <>
                                 <div className="mx-5 mt-5">
-                                    <div className="flex bg-gray-100 border border-gray-300 shadow rounded-xl px-4 py-1 font-mono mt-8 text-sm">{filterToString(subFilter)}</div>
+                                    <div className="flex bg-muted border border-border shadow rounded-xl px-4 py-1 font-mono mt-8 text-sm text-foreground">{filterToString(subFilter)}</div>
                                     <ActionButton text={'Save'} noIcon onClick={() => {
                                         innerFilterArray.push(subFilter); setFilters(filters); setIsAddSubFilterModalOpen(false);
-                                    }} className={'bg-primary text-white mt-5'} />
+                                    }} className={'bg-primary text-primary-foreground mt-5'} />
                                 </div>
                             </>
                         }
@@ -60,7 +60,7 @@ export default function FilterRenderer({ filter, filters, setFilters }) {
                     if (filter?.and) {
                         // For 'and', join each condition with 'AND'
                         return (
-                            <div className="px-4 pt-2 pb-3 border border-gray-300 shadow">
+                            <div className="px-4 pt-2 pb-3 border border-border shadow rounded-lg bg-card">
                                 <div className="font-bold text-xs text-primary mb-2">AND</div>
                                 {
                                     filter.and.map((f) => (
@@ -68,21 +68,25 @@ export default function FilterRenderer({ filter, filters, setFilters }) {
                                     ))
                                 }
                                 <div className="flex mt-4 mx-5 justify-start">
-                                    <div className="flex bg-dark rounded-full p-1"><BiPlusCircle onClick={() => { setSubFilter({ attribute: ' ' }); setInnerFilterArray(filter.and); setIsAddSubFilterModalOpen(true) }} className="text-white text-xl cursor-pointer" /></div>
+                                    <button className="flex items-center justify-center bg-primary rounded-full p-1 hover:bg-primary/90 transition-colors">
+                                        <BiPlusCircle onClick={() => { setSubFilter({ attribute: ' ' }); setInnerFilterArray(filter.and); setIsAddSubFilterModalOpen(true) }} className="text-primary-foreground text-xl cursor-pointer" />
+                                    </button>
                                 </div>
                             </div>)
                     } else if (filter?.or) {
                         // For 'or', join each condition with 'OR'
                         return (
-                            <div className="px-4 pt-2 pb-3 border border-gray-300 shadow">
-                                <div className="font-bold text-xs text-surface-light">OR</div>
+                            <div className="px-4 pt-2 pb-3 border border-border shadow rounded-lg bg-card">
+                                <div className="font-bold text-xs text-primary">OR</div>
                                 {
                                     filter.or.map((f) => (
                                         <FilterRenderer filter={f} filters={filters} setFilters={setFilters} />
                                     ))
                                 }
                                 <div className="flex mt-4 mx-5 justify-start">
-                                    <div className="flex bg-dark rounded-full p-1"><BiPlusCircle onClick={() => { setSubFilter({ attribute: ' ' }); setInnerFilterArray(filter.or); setIsAddSubFilterModalOpen(true) }} className="text-white text-xl cursor-pointer" /></div>
+                                    <button className="flex bg-primary items-center justify-center rounded-full p-1 hover:bg-primary/90 transition-colors">
+                                        <BiPlusCircle onClick={() => { setSubFilter({ attribute: ' ' }); setInnerFilterArray(filter.or); setIsAddSubFilterModalOpen(true) }} className="text-primary-foreground text-xl cursor-pointer" />
+                                    </button>
                                 </div>
                             </div>)
                     } else if (filter?.not) {

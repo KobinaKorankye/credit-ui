@@ -248,13 +248,10 @@ export default function AddApplicant() {
 
         try {
             const { data } = await client.post("/loan-applications", saveableData);
-            toast.success("Saved", {
-                position: "top-left",
-            });
             navigate('/applicants')
         } catch (error) {
             toast.error("Failed to save", {
-                position: "top-left",
+                position: "top-right",
             });
         }
 
@@ -265,15 +262,49 @@ export default function AddApplicant() {
         <>
             <SideNavLayout>
                 {loading ? (
-                    <div className="bg-white flex flex-col items-center justify-center w-full h-full overflow-auto">
-                        <Loader height={200} width={200} />
-                        <div className="font-semibold">Analyzing...</div>
+                    <div className="flex items-center justify-center w-full h-full">
+                        <Loader />
                     </div>
                 ) : (
-                    <div className="bg-white flex flex-col items-start w-full h-full overflow-y-auto px-20">
-                        <div className="text-xl py-2 font-semibold my-5 text-sky-600">
-                            Loan Application Form
+                    <div className="flex flex-col items-start w-full h-full overflow-y-auto px-4 sm:px-6 lg:px-20 py-6">
+                        <div className="w-full mb-8">
+                            <div className="text-2xl font-semibold mb-2 text-primary">
+                                Loan Application Form
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-6">
+                                Complete all steps to submit your loan application
+                            </p>
+
+                            {/* Step Indicator */}
+                            <div className="flex items-center gap-2 mb-6">
+                                {['Personal Info', 'Financial Info', 'Credit History', 'Loan Details'].map((stepName, index) => (
+                                    <React.Fragment key={index}>
+                                        <div className="flex items-center gap-2">
+                                            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-colors ${
+                                                index === step
+                                                    ? 'bg-primary text-primary-foreground'
+                                                    : index < step
+                                                        ? 'bg-primary/20 text-primary'
+                                                        : 'bg-muted text-muted-foreground'
+                                            }`}>
+                                                {index + 1}
+                                            </div>
+                                            <span className={`hidden sm:inline text-sm font-medium ${
+                                                index === step ? 'text-primary' : 'text-muted-foreground'
+                                            }`}>
+                                                {stepName}
+                                            </span>
+                                        </div>
+                                        {index < 3 && (
+                                            <div className={`h-0.5 w-8 sm:w-12 transition-colors ${
+                                                index < step ? 'bg-primary' : 'bg-muted'
+                                            }`} />
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                            </div>
                         </div>
+
                         <Formik
                             initialValues={initialValues}
                             validationSchema={validationSchema[step]}
@@ -282,8 +313,11 @@ export default function AddApplicant() {
                             {({ errors, validateForm, handleSubmit }) => (
                                 <>
                                     {step === 0 && (
-                                        <div className="w-full grid md:grid-cols-2 gap-4">
-                                            <FormInput label="Full Name" name="full_name" type="text" />
+                                        <div className="w-full space-y-6">
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-foreground mb-4">Personal Information</h3>
+                                                <div className="grid md:grid-cols-2 gap-4">
+                                                    <FormInput label="Full Name" name="full_name" type="text" />
                                             <FormSelect label="Sex" name="sex" options={attributeMapping.sex} />
                                             <FormInput label="Age" name="age" type="number" />
                                             <FormSelect label="Marital Status" name="marital_status" options={attributeMapping.marital_status} />
@@ -301,40 +335,57 @@ export default function AddApplicant() {
                                                 options={attributeMapping.foreign_worker}
                                             />
                                             <FormInput name="present_residence_since" type="number" />
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                     {step === 1 && (
-                                        <div className="w-full grid md:grid-cols-2 gap-4">
-                                            <FormSelect label="Status of Existing Checking Account" name="status_of_existing_checking_account" options={attributeMapping.status_of_existing_checking_account} />
+                                        <div className="w-full space-y-6">
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-foreground mb-4">Financial Information</h3>
+                                                <div className="grid md:grid-cols-2 gap-4">
+                                                    <FormSelect label="Status of Existing Checking Account" name="status_of_existing_checking_account" options={attributeMapping.status_of_existing_checking_account} />
                                             <FormSelect label="Savings Account/Bonds" name="savings_account_bonds" options={attributeMapping.savings_account_bonds} />
                                             <FormSelect label="Property" name="property" options={attributeMapping.property} />
                                             <FormSelect label="Housing" name="housing" options={attributeMapping.housing} />
                                             <FormSelect label="Job" name="job" options={attributeMapping.job} />
                                             <FormSelect label="Present Employment Since" name="present_employment_since" options={attributeMapping.present_employment_since} />
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                     {step === 2 && (
-                                        <div className="w-full grid md:grid-cols-2 gap-4">
-                                            <FormSelect label="Other Installment Plans" name="other_installment_plans" options={attributeMapping.other_installment_plans} />
+                                        <div className="w-full space-y-6">
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-foreground mb-4">Credit History</h3>
+                                                <div className="grid md:grid-cols-2 gap-4">
+                                                    <FormSelect label="Other Installment Plans" name="other_installment_plans" options={attributeMapping.other_installment_plans} />
                                             <FormInput label="Number of Existing Credits at This Bank" name="number_of_existing_credits_at_this_bank" type="number" />
                                             <FormInput label="Number of People Being Liable to Provide Maintenance For" name="number_of_people_being_liable_to_provide_maintenance_for" type="number" />
                                             <FormSelect label="Credit History" name="credit_history" options={attributeMapping.credit_history} />
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                     {step === 3 && (
-                                        <div className="w-full grid md:grid-cols-2 gap-4">
-                                            <FormInput label="Loan Amount Requested" name="loan_amount_requested" type="number" />
+                                        <div className="w-full space-y-6">
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-foreground mb-4">Loan Details</h3>
+                                                <div className="grid md:grid-cols-2 gap-4">
+                                                    <FormInput label="Loan Amount Requested" name="loan_amount_requested" type="number" />
                                             <FormInput label="Duration in Months" name="duration_in_months" type="number" />
                                             <FormSelect label="Purpose" name="purpose" options={attributeMapping.purpose} />
                                             <FormSelect label="Other Debtors/Guarantors" name="other_debtors_guarantors" options={attributeMapping.other_debtors_guarantors} />
                                             <FormInput label="Installment Rate in Percentage of Disposable Income" name="installment_rate_in_percentage_of_disposable_income" type="number" />
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
-                                    <div className="flex justify-between mt-10 gap-4 text-sm">
+                                    <div className="flex justify-between mt-10 gap-4 text-sm w-full">
                                         {step > 0 && (
                                             <button
                                                 type="button"
-                                                className="bg-zinc-100 text-zinc-600 mb-10 py-4 text-sm hover:bg-zinc-600 hover:text-white px-4 rounded"
+                                                className="inline-flex items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-medium transition-all bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-xs"
                                                 onClick={handlePrevious}
                                             >
                                                 Previous
@@ -343,7 +394,7 @@ export default function AddApplicant() {
                                         {step < validationSchema.length - 1 && (
                                             <button
                                                 type="button"
-                                                className="bg-blue-100 w-64 mb-10 py-4 text-sm px-4 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold rounded"
+                                                className="inline-flex items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-medium transition-all bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs ml-auto"
                                                 onClick={() => handleNext(errors, validateForm)}
                                             >
                                                 Next
@@ -351,8 +402,8 @@ export default function AddApplicant() {
                                         )}
                                         {step === validationSchema.length - 1 && (
                                             <Submit
-                                                className="bg-amber-100 w-64 mb-10 py-4 text-sm px-4 text-amber-600 hover:bg-amber-600 hover:text-white font-semibold rounded"
-                                                text="Submit"
+                                                className="inline-flex items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-medium transition-all bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs ml-auto"
+                                                text="Submit Application"
                                             />
                                         )}
                                     </div>

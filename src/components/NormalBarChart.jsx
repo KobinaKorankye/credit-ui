@@ -1,9 +1,9 @@
 import Chart from "react-apexcharts";
 import React, { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { LuInfo } from "react-icons/lu";
 import { Tooltip } from "react-tooltip";
-import { themePalette } from "../../themePalette";
+
+import { getThemeColors, getCSSCustomProperties } from "../utils/colorUtils";
 
 export default function NormalBarChart({
   columnArray,
@@ -59,85 +59,247 @@ export default function NormalBarChart({
     }
   }, [columnArray, classArray]);
 
+  const cssProps = getCSSCustomProperties();
+  const themeColors = getThemeColors();
+
   const options = {
     chart: {
       type: "bar",
-      height: 500,
+      height: height,
+      background: 'transparent',
+      toolbar: {
+        show: false
+      },
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+        animateGradually: {
+          enabled: true,
+          delay: 150
+        }
+      }
+    },
+    colors: [themeColors.secondary, themeColors.primary],
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        borderRadius: 4,
+        borderRadiusApplication: 'end',
+        borderRadiusWhenStacked: 'last',
+        columnWidth: '60%',
+        dataLabels: {
+          position: 'top'
+        }
+      },
+    },
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ['transparent']
     },
     xaxis: {
       type: "category",
       title: {
         text: title,
+        style: {
+          fontSize: "12px",
+          fontWeight: 600,
+          color: `${cssProps.foreground}`,
+          fontFamily: 'Inter, system-ui, sans-serif'
+        },
       },
+      labels: {
+        style: {
+          fontSize: "11px",
+          fontWeight: 500,
+          colors: `${cssProps.mutedForeground}`,
+          fontFamily: 'Inter, system-ui, sans-serif'
+        },
+        rotate: -45,
+        rotateAlways: false,
+        maxHeight: 120
+      },
+      axisBorder: {
+        show: false
+      },
+      axisTicks: {
+        show: false
+      }
     },
     yaxis: {
       title: {
-        text: yLabel,
+        text: "Count",
+        style: {
+          fontSize: "12px",
+          fontWeight: 600,
+          color: `${cssProps.foreground}`,
+          fontFamily: 'Inter, system-ui, sans-serif'
+        },
       },
       labels: {
-        show: true, // Show y-axis labels
+        style: {
+          fontSize: "11px",
+          fontWeight: 500,
+          colors: `${cssProps.mutedForeground}`,
+          fontFamily: 'Inter, system-ui, sans-serif'
+        },
+        formatter: function(val) {
+          return Math.floor(val).toLocaleString();
+        }
       },
     },
-    plotOptions: {
-      bar: {
-        // Removed distributed option
-        horizontal: false,
+    grid: {
+      show: true,
+      borderColor: `${cssProps.border}`,
+      strokeDashArray: 3,
+      position: 'back',
+      xaxis: {
+        lines: {
+          show: false
+        }
       },
+      yaxis: {
+        lines: {
+          show: true
+        }
+      },
+      padding: {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0
+      }
+    },
+    legend: {
+      position: "top",
+      horizontalAlign: "center",
+      floating: false,
+      fontSize: '12px',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      fontWeight: 500,
+      labels: {
+        colors: `${cssProps.foreground}`
+      },
+      markers: {
+        width: 12,
+        height: 12,
+        radius: 3
+      },
+      itemMargin: {
+        horizontal: 16,
+        vertical: 8
+      }
     },
     annotations: {
-      xaxis: [
+      xaxis: highlightPoint !== undefined && highlightPoint !== null ? [
         {
           x: highlightPoint,
-          borderColor: "#070707",
+          borderColor: `${cssProps.foreground}`,
+          borderWidth: 2,
+          strokeDashArray: 5,
           label: {
-            borderColor: "#070707",
+            borderColor: `${cssProps.foreground}`,
+            borderWidth: 1,
+            borderRadius: 6,
             style: {
-              color: "#000",
-              background: "#faf",
-              fontSize: "18px",
-              fontWeight: "bold",
+              color: `${cssProps.background}`,
+              background: `${cssProps.foreground}`,
+              fontSize: '12px',
+              fontWeight: 600,
+              fontFamily: 'Inter, system-ui, sans-serif',
+              padding: {
+                left: 8,
+                right: 8,
+                top: 4,
+                bottom: 4
+              }
             },
-            text: "Applicant: " + highlightPoint,
+            text: `Applicant: ${highlightPoint}`,
           },
         },
-      ],
+      ] : [],
     },
+    tooltip: {
+      enabled: true,
+      shared: true,
+      intersect: false,
+      theme: 'dark',
+      style: {
+        fontSize: "12px",
+        fontFamily: 'Inter, system-ui, sans-serif'
+      },
+      custom: function({series, seriesIndex, dataPointIndex, w}) {
+        const seriesName = w.globals.seriesNames[seriesIndex];
+        const category = w.globals.labels[dataPointIndex];
+        const value = series[seriesIndex][dataPointIndex];
+
+        return `
+          <div class="px-3 py-2 bg-popover border border-border rounded-lg shadow-lg">
+            <div class="font-medium text-popover-foreground text-sm">${seriesName}</div>
+            <div class="text-xs text-muted-foreground mt-1">
+              ${title}: <span class="font-semibold text-foreground">${category}</span><br/>
+              Count: <span class="font-semibold text-foreground">${value.toLocaleString()}</span>
+            </div>
+          </div>
+        `;
+      }
+    }
   };
 
   const series = [
     {
       name: "Defaulting",
       data: defaultingData,
-      color: themePalette.secondary, // Specific color for Defaulting
     },
     {
       name: "Not Defaulting",
       data: notDefaultingData,
-      color: themePalette.primary, // Specific color for Not Defaulting
     },
   ];
 
   return (
-    <div className="relative" id="chart">
+    <div className="relative w-full" id="chart">
       {showInfo && (
         <>
           <div
-            className="absolute text-blue-800 -top-5 left-2 cursor-pointer"
-            data-tooltip-id="desc3"
+            className="absolute top-2 right-2 z-10 p-2 rounded-full bg-muted/80 hover:bg-muted transition-colors cursor-pointer"
+            data-tooltip-id='bar-desc'
           >
-            <FontAwesomeIcon size="xl" icon={faInfoCircle} />
+            <LuInfo className="h-4 w-4 text-muted-foreground" />
           </div>
-          <Tooltip style={{ width: "400px" }} id="desc3" place="bottom">
-            This histogram displays the frequency distribution of{" "}
-            <span className="font-bold text-green-500">
-              {title.toLowerCase()}
-            </span>{" "}
-            values for past approved loan customers. <br /> It compares
-            defaulting and non-defaulting customers on the same plot.
+          <Tooltip
+            id="bar-desc"
+            place="left"
+            className="max-w-sm"
+            style={{
+              backgroundColor: 'hsl(var(--popover))',
+              color: 'hsl(var(--popover-foreground))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontFamily: 'Inter, system-ui, sans-serif'
+            }}
+          >
+            <div className="space-y-2">
+              <div className="font-semibold">Category Distribution</div>
+              <div className="text-xs">
+                This chart shows the frequency distribution of <span className="font-medium text-primary">{title.toLowerCase()}</span> categories
+                for historical loan customers, comparing defaulting vs non-defaulting patterns.
+              </div>
+              <div className="text-xs text-muted-foreground">
+                The vertical line shows the current applicant's category.
+              </div>
+            </div>
           </Tooltip>
         </>
       )}
-      <Chart options={options} series={series} type="bar" height={height} />
+      <div className="rounded-lg overflow-hidden">
+        <Chart options={options} series={series} type="bar" height={height} />
+      </div>
     </div>
   );
 }

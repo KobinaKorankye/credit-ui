@@ -1,10 +1,11 @@
 import React from "react";
 import Chart from "react-apexcharts";
-import { themePalette } from "../../themePalette";
 import { useLocation } from "react-router-dom";
 import { getApplicantInfoField } from "../helpers";
 import { COLUMN_LABELS, mappings } from "../constants";
 import { capitalize } from "@mui/material";
+
+import { getThemeColors, getCSSCustomProperties } from "../utils/colorUtils";
 
 function sortObjectByValues(obj) {
   const entries = Object.entries(obj);
@@ -124,7 +125,6 @@ const BarChart = ({ data, bias, global, height = 250 }) => {
     // When global is true, keep the unmodified categories and series
     finalCategories = Object.keys(modifiedData);
     finalSeries = Object.values(modifiedData);
-    console.log("finalCategories", finalCategories)
   }
 
   // Prepare chartData
@@ -141,205 +141,188 @@ const BarChart = ({ data, bias, global, height = 250 }) => {
     ],
   };
 
+  const themeColors = getThemeColors();
+  const cssProps = getCSSCustomProperties();
+
   const options = {
     chart: {
       type: "bar",
       height: height,
-      foreColor: "#000",
+      foreColor: `hsl(${cssProps.foreground})`,
+      background: 'transparent',
+      toolbar: {
+        show: false
+      },
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+        animateGradually: {
+          enabled: true,
+          delay: 150
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 350
+        }
+      }
     },
     plotOptions: {
       bar: {
         horizontal: true,
+        borderRadius: 6,
+        borderRadiusApplication: 'end',
+        borderRadiusWhenStacked: 'last',
         colors: {
           ranges: [
-            { from: -Infinity, to: 0, color: themePalette.secondary },
-            { from: 0, to: Infinity, color: global ? "#008FFB" : themePalette.primary },
+            {
+              from: -Infinity,
+              to: 0,
+              color: themeColors.secondary
+            },
+            {
+              from: 0,
+              to: Infinity,
+              color: themeColors.primary
+            },
           ],
+          backgroundBarColors: [`hsl(${cssProps.background})`],
+          backgroundBarOpacity: 0.1,
         },
+        dataLabels: {
+          position: 'center',
+        }
       },
     },
-    dataLabels: { enabled: false },
+    dataLabels: {
+      enabled: false
+    },
     xaxis: {
       categories: chartData.categories,
       labels: {
-        style: { fontSize: "12px" },
+        style: {
+          fontSize: "11px",
+          fontWeight: 500,
+          colors: `hsl(${cssProps.mutedForeground})`
+        },
+        formatter: function (val) {
+          return typeof val === 'number' ? val.toFixed(2) : val;
+        }
       },
+      axisBorder: {
+        show: false
+      },
+      axisTicks: {
+        show: false
+      }
     },
     yaxis: {
       labels: {
-        style: { fontSize: "10px", width: 500 },
+        style: {
+          fontSize: "10px",
+          fontWeight: 500,
+          colors: `hsl(${cssProps.mutedForeground})`
+        },
+        maxWidth: 200,
       },
     },
     grid: {
-      yaxis: {
-        lines: { show: false },
+      show: true,
+      borderColor: `hsl(${cssProps.border})`,
+      strokeDashArray: 3,
+      position: 'back',
+      xaxis: {
+        lines: {
+          show: true
+        }
       },
+      yaxis: {
+        lines: {
+          show: false
+        },
+      },
+      padding: {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0
+      }
     },
     tooltip: {
+      enabled: true,
+      theme: 'dark',
       style: {
         fontSize: "12px",
-        color: "#f4f4f4",
+        fontFamily: 'Inter, system-ui, sans-serif'
       },
+      custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+        const value = series[seriesIndex][dataPointIndex];
+        const category = w.globals.labels[dataPointIndex];
+        return `
+          <div class="px-3 py-2 bg-popover border border-border rounded-lg shadow-lg">
+            <div class="font-medium text-popover-foreground text-sm">${category}</div>
+            <div class="text-xs text-muted-foreground mt-1">
+              Impact: <span class="font-semibold text-foreground">${value.toFixed(4)}</span>
+            </div>
+          </div>
+        `;
+      }
     },
+    legend: {
+      show: false
+    },
+    states: {
+      hover: {
+        filter: {
+          type: 'lighten',
+          value: 0.1
+        }
+      },
+      active: {
+        allowMultipleDataPointsSelection: false,
+        filter: {
+          type: 'darken',
+          value: 0.1
+        }
+      }
+    }
   };
 
   return (
-    <div>
+    <div className="w-full">
       {!global && (
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "10px" }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
+        <div className="flex justify-center items-center gap-6 mb-6 p-3 bg-muted/30 rounded-lg border">
+          <div className="flex items-center gap-2">
             <div
-              style={{
-                width: "10px",
-                height: "10px",
-                backgroundColor: themePalette.secondary,
-                marginRight: "5px",
-              }}
+              className="w-3 h-3 rounded-sm shadow-sm"
+              style={{ backgroundColor: themeColors.secondary }}
             ></div>
-            <span className="text-sm" style={{ color: "#000" }}>
-              Defaulting
+            <span className="text-sm font-medium text-foreground">
+              Increases Default Risk
             </span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", marginLeft: "20px" }}>
+          <div className="flex items-center gap-2">
             <div
-              style={{
-                width: "10px",
-                height: "10px",
-                backgroundColor: themePalette.primary,
-                marginRight: "5px",
-              }}
+              className="w-3 h-3 rounded-sm shadow-sm"
+              style={{ backgroundColor: themeColors.primary }}
             ></div>
-            <span className="text-sm" style={{ color: "#000" }}>
-              Not Defaulting
+            <span className="text-sm font-medium text-foreground">
+              Decreases Default Risk
             </span>
           </div>
         </div>
       )}
-      <Chart options={options} series={chartData.series} type="bar" height={height} />
+      <div className="relative">
+        <Chart
+          options={options}
+          series={chartData.series}
+          type="bar"
+          height={height}
+          className="rounded-lg"
+        />
+      </div>
     </div>
   );
 };
 
 export default BarChart;
-
-
-// import React from "react";
-// import Chart from "react-apexcharts";
-// import { themePalette } from "../../themePalette";
-
-// function sortObjectByValues(obj) {
-//   // Convert the object to an array of key-value pairs
-//   const entries = Object.entries(obj);
-
-//   // Sort the array based on the values
-//   entries.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
-
-//   // Convert the sorted array back into an object
-//   const sortedObj = Object.fromEntries(entries);
-
-//   return sortedObj;
-// }
-
-// const BarChart = ({ data, bias, global, height=250 }) => {
-//   // Add bias as an additional feature
-//   const modifiedData = !global?{
-//     ...data,
-//     Bias: bias,
-//   }: sortObjectByValues(data);
-
-//   const chartData = {
-//     categories: Object.keys(modifiedData),
-//     series: [
-//       {
-//         data: global? Object.values(modifiedData).map((val)=>Math.abs(val)): Object.values(modifiedData),
-//       },
-//     ],
-//   };
-
-//   const options = {
-//     chart: {
-//       type: "bar",
-//       height: 600,
-//       foreColor: "#000", // Default color for all text in the chart
-//     },
-//     plotOptions: {
-//       bar: {
-//         horizontal: true,
-//         colors: {
-//           ranges: [
-//             {
-//               from: -Infinity,
-//               to: 0,
-//               color: themePalette.secondary,
-//             },
-//             {
-//               from: 0,
-//               to: Infinity,
-//               color: global? "#008FFB" :themePalette.primary, 
-//             },
-//           ],
-//         },
-//       },
-//     },
-//     dataLabels: {
-//       enabled: false,
-//     },
-//     xaxis: {
-//       categories: chartData.categories,
-//       labels: {
-//         style: {
-//           // colors: ['#333'], // Color for x-axis labels
-//           fontSize: "12px",
-//         },
-//       },
-//     },
-//     yaxis: {
-//       labels: {
-//         style: {
-//           // colors: ['#333'], // Color for y-axis labels
-//           fontSize: "10px",
-//           width: 500,
-//         },
-//       },
-//     },
-//     grid: {
-//       yaxis: {
-//         lines: {
-//           show: false, // Hide the horizontal grid lines
-//         },
-//       },
-//     },
-//     tooltip: {
-//       style: {
-//         fontSize: "12px",
-//         color: "#f4f4f4", // Color for tooltip text
-//       },
-//     },
-//   };
-
-//   return (
-//     <div>
-//       {
-//         !global &&
-//         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-//           <div style={{ display: 'flex', alignItems: 'center' }}>
-//           <div style={{ width: '10px', height: '10px', backgroundColor: themePalette.secondary, marginRight: '5px' }}></div>
-//           <span className="text-sm" style={{ color: '#000' }}>Defaulting</span>
-//         </div>
-//         <div style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
-//           <div style={{ width: '10px', height: '10px', backgroundColor: themePalette.primary, marginRight: '5px' }}></div>
-//           <span className="text-sm" style={{ color: '#000' }}>Not Defaulting</span>
-//         </div>
-//       </div>
-//       }
-//       <Chart
-//         options={options}
-//         series={chartData.series}
-//         type="bar"
-//         height={height}
-//       />
-//     </div>
-//   );
-// };
-
-// export default BarChart;

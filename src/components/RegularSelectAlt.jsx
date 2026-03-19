@@ -10,26 +10,43 @@ const RegularSelectAlt = ({
   onChange,
   onBlur,
   disabled = false,
-  alt
+  error,
+  required,
+  ...props
 }) => {
   return (
-    <div className={`${boxClassName}`}>
-      <label className={`block text-[0.7rem] font-[600] tracking-wider mb-1 text-tblue`} htmlFor={name}>
-        {label || name}
-      </label>
-      <div
-        className={`flex w-full items-center shadow appearance-none rounded border ${alt ? 'border-slate-300' : 'border-accent'} px-[0.5rem] py-[0.6rem] text-gray-900 
-        leading-tight`}
-      >
-        {Icon && <Icon />}
+    <div className={`space-y-2 ${boxClassName}`}>
+      {label && (
+        <label
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
+          htmlFor={name}
+        >
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </label>
+      )}
+      <div className="relative">
+        {Icon && (
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+            <Icon className="h-4 w-4" />
+          </div>
+        )}
         <select
           name={name}
           disabled={disabled}
           onBlur={onBlur}
           value={value}
           onChange={onChange}
-          className="w-full focus:outline-none dark:text-zinc-400 focus:shadow-outline bg-transparent text-[0.8rem] font-[500]"
+          required={required}
+          className={`
+            flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm
+            shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1
+            focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50
+            ${Icon ? 'pl-9' : ''}
+            ${error ? 'border-destructive focus-visible:ring-destructive' : ''}
+          `}
           id={name}
+          {...props}
         >
           {options.map((option) => (
             <option key={option.value} value={option.value}>
@@ -38,6 +55,9 @@ const RegularSelectAlt = ({
           ))}
         </select>
       </div>
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
+      )}
     </div>
   );
 };

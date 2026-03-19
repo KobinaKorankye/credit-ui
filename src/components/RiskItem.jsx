@@ -1,12 +1,18 @@
 
+import Card from "./Card";
+
 export default function RiskItem({icon: Icon, name, value}) {
     return (
-        <div className="flex gap-3 items-center border-2 border-gray-300 shadow bg-gray-800 px-5 rounded py-5">
-            <div className="text-3xl font-bold text-sky-400"><Icon /></div>
-            <div className="flex flex-col gap-1">
-                <div className="text-gray-300 font-semibold text-2xl">{name}</div>
-                <div className="font-bold text-gray-100 text-xl">{value}</div>
+        <Card className="h-full">
+            <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
+                    <Icon className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                    <div className="text-sm font-medium text-muted-foreground truncate">{name}</div>
+                    <div className="text-xl lg:text-2xl font-bold text-foreground">{value}</div>
+                </div>
             </div>
-        </div>
+        </Card>
     )
 }

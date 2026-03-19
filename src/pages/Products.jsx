@@ -20,11 +20,32 @@ import Submit from "../components/formik/Submit";
 import { attributeObjMapping, COLUMN_LABELS, filterAttributes, mappings, numericColumns } from "../constants";
 import ObjSelect from "../components/forms/ObjSelect"
 import AppInput from "../components/forms/AppInput";
-import Modal2 from "../components/modals/Modal2";
+
 import FilterRenderer from "../components/filtering/FilterRenderer";
 import { TbTrash } from "react-icons/tb";
 import useRefState from "../hooks/useRefState";
 import CheckBox from "../components/forms/CheckBox";
+import Card from "../components/Card";
+
+// Simple Tab Components for Modal
+const TabButton = ({ active, onClick, children }) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 whitespace-nowrap ${
+      active
+        ? 'bg-primary text-primary-foreground shadow-sm'
+        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+    }`}
+  >
+    {children}
+  </button>
+);
+
+const TabContainer = ({ children }) => (
+  <div className="flex items-center space-x-1 bg-muted rounded-lg p-1 w-fit">
+    {children}
+  </div>
+);
 
 const productSchema = Yup.object().shape({
     name: Yup.string()
@@ -37,20 +58,6 @@ const productSchema = Yup.object().shape({
         .positive()
         .label("Loan amount"),
 })
-
-// const purposeOptions = [
-//     { label: "Car new", value: "A40" },
-//     { label: "Car used", value: "A41" },
-//     { label: "Furniture/equipment", value: "A42" },
-//     { label: "Radio/TV", value: "A43" },
-//     { label: "Domestic appliances", value: "A44" },
-//     { label: "Repairs", value: "A45" },
-//     { label: "Education", value: "A46" },
-//     { label: "Vacation", value: "A47" },
-//     { label: "Retraining", value: "A48" },
-//     { label: "Business", value: "A49" },
-//     { label: "Others", value: "A410" }
-// ];
 
 const purposeOptions = [
     { label: "Car new", value: "Car new" },
@@ -116,7 +123,6 @@ const predictionColumns = [
         valueGetter: (value, row) => getApplicantInfoField(row).full_name,
     },
     {
-        // field: "repayment_proba",
         headerName: "Probability of Repayment",
         width: 230,
         type: 'number',
@@ -145,6 +151,8 @@ export default function Products() {
     const [eligibleNumber, setEligibleNumber] = useState(5)
     const [latestLogicalOp, setLatestLogicalOp] = useState('or')
     const [taskId, setTaskId] = useState(null);
+    const [activeTab, setActiveTab] = useState('product-info');
+    const [searchText, setSearchText] = useState('');
     const eventSourceRef = useRef(null);
 
     const navigate = useNavigate();
@@ -152,17 +160,12 @@ export default function Products() {
     const getProducts = async () => {
         try {
             const { data } = await client.get("/products");
-            //   toast.success("Loaded Successfully", {
-            //     position: "top-left",
-            //   });
             setProducts(data.reverse());
             setSelectedProduct(data.find((prod) => prod.id === selectedProduct?.id))
-            console.log(data);
         } catch (error) {
             toast.error("Failed", {
-                position: "top-left",
+                position: "top-right",
             });
-            console.log(error);
         }
     };
 
@@ -174,16 +177,11 @@ export default function Products() {
                 ...form, filters: Object.keys(filters).length !== 0 ? filters : null, eligible_customers: null
             });
             setProducts((prev) => [data, ...prev]);
-            toast.success("Created successfully", {
-                position: "top-left",
-            });
-            console.log(data);
             setIsCreateModalOpen(false)
         } catch (error) {
             toast.error("Failed", {
-                position: "top-left",
+                position: "top-right",
             });
-            console.log(error);
         }
         setLoading(false);
     };
@@ -197,16 +195,11 @@ export default function Products() {
                 filters: Object.keys(selectedProductFilters).length === 0 ? null : selectedProductFilters,
                 eligible_customers: selectedProduct?.eligible_customers
             });
-            setProducts((prev) => prev.map((prod) => prod.id == data.id ? data : prod))
-            toast.success("Update successful", {
-                position: "top-left",
-            });
-            console.log(data);
+            setProducts((prev) => prev.map((prod) => prod.id === data.id ? data : prod))
         } catch (error) {
             toast.error("Failed", {
-                position: "top-left",
+                position: "top-right",
             });
-            console.log(error);
         }
         setLoading(false);
     };
@@ -222,11 +215,10 @@ export default function Products() {
             setProducts(products.map((prod) => selectedProduct.id === prod.id ? { ...prod, processing: true } : prod))
         } catch (error) {
             toast.error("Failed to start processing", {
-                position: "top-left",
+                position: "top-right",
             });
             setSelectedProduct({ ...selectedProduct, processing: false })
             setProducts(products.map((prod) => selectedProduct.id === prod.id ? { ...prod, processing: false } : prod))
-            console.error(error);
         }
 
         setLoading(false);
@@ -238,43 +230,16 @@ export default function Products() {
         try {
             // Start the Celery task
             const { data } = await client.get(`/fx/contact-eligible/${selectedProduct.id}`);
-            // setTaskId(data.task_id); // Set the taskId in state to trigger the useEffect
-            toast.success("Messages sent", {
-                position: "top-left",
-            });
-
         } catch (error) {
             toast.error("Failed to start processing", {
-                position: "top-left",
+                position: "top-right",
             });
             setSelectedProduct({ ...selectedProduct, processing: false })
             setProducts(products.map((prod) => selectedProduct.id === prod.id ? { ...prod, processing: false } : prod))
-            console.error(error);
         }
 
         setLoading(false);
     };
-
-    // const getEligible = async () => {
-    //     setLoading(true);
-    //     setLoadingSource("eligible");
-    //     try {
-    //         const { data } = await client.get(`/fx/get-eligible/${selectedProduct.id}?limit=${eligibleNumber}${isCustomerOnly ? "&type=customers" : ''}`);
-    //         console.log(data);
-    //         toast.success("Processed Successfully", {
-    //             position: "top-left",
-    //         });
-    //         setProducts((prev) => prev.map((prod) => prod.id == data.id ? data : prod))
-    //         setSelectedProduct(data)
-    //         setSelectedProductFilters(data.filters || {})
-    //     } catch (error) {
-    //         toast.error("Failed", {
-    //             position: "top-left",
-    //         });
-    //         console.log(error);
-    //     }
-    //     setLoading(false);
-    // };
 
     const showProductDetails = async (params, event, details) => {
         setSelectedProduct(params.row)
@@ -296,26 +261,21 @@ export default function Products() {
         }
 
         // Create a new EventSource to listen for task updates
-        const eventSource = new EventSource(`http://localhost:8000/fx/task-status/${taskId}`);
+        const eventSource = new EventSource(`${import.meta.env.VITE_API_BASE_URL || "http://54.246.247.31:8001"}/fx/task-status/${taskId}`);
         eventSourceRef.current = eventSource;
 
         eventSource.onmessage = (event) => {
             const { status } = JSON.parse(event.data);
 
-            console.log(event)
-
             if (status === 'SUCCESS') {
                 // Fetch updated product data when processing is complete
                 getProducts();
-                toast.success("Processed Successfully", {
-                    position: "top-left",
-                });
                 setLoading(false);
                 eventSource.close(); // Close the EventSource when processing is complete
                 setTaskId(null); // Reset taskId
             } else if (status === 'FAILURE') {
                 toast.error("Processing failed", {
-                    position: "top-left",
+                    position: "top-right",
                 });
                 setLoading(false);
                 eventSource.close(); // Close the EventSource on failure
@@ -354,261 +314,612 @@ export default function Products() {
     return (
         <SideNavLayout>
             <Modal isOpen={isCreateModalOpen}>
-                <div onClick={() => { setIsCreateModalOpen(false) }} className="w-screen h-screen overflow-y-auto flex flex-col p-10 items-center bg-black/50">
-                    <div onClick={(e) => { e.stopPropagation() }} className="max-w-full bg-white px-14 pt-5 pb-10 rounded">
-                        <div className="flex justify-end"> <FiX className="text-lg cursor-pointer" onClick={() => { setIsCreateModalOpen(false) }} /></div>
-                        <div className="text-xl font-semibold">Create Product</div>
-                        <Formik
-                            initialValues={initialValues}
-                            validationSchema={productSchema}
-                            onSubmit={createProduct}
-                        >
-                            <div className="flex flex-col mt-10">
-                                <div className="grid grid-cols-2 gap-x-5 gap-y-8">
-                                    <FormInput name={'name'} type={'text'} label={'Product name'} placeholder="Product name" />
-                                    <FormInput name={'duration'} type={'number'} label={'Duration (months)'} placeholder="Duration (months)" />
-                                    <FormSelect name={'purpose'} label={'Purpose'} options={purposeOptions} />
-                                    <FormInput name={'credit_amount'} type={'number'} label={'Max loan amount (GH₵)'} placeholder="0.00" />
+                <div
+                    onClick={() => { setIsCreateModalOpen(false) }}
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+                >
+                    <div
+                        onClick={(e) => { e.stopPropagation() }}
+                        className="bg-background w-full max-w-4xl h-full max-h-[90vh] overflow-y-auto rounded-xl shadow-lg border border-border"
+                    >
+                        {/* Modal Header */}
+                        <div className="sticky top-0 bg-background border-b border-border p-6 z-10">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-2xl font-bold text-foreground">Create Product</h2>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        Create a new loan product with eligibility criteria
+                                    </p>
                                 </div>
-                                <div className="text-base font-semibold mt-10">Filters</div>
-                                <FilterRenderer filter={filters} filters={filters} setFilters={setFilters} />
-                                {
-                                    Object.keys(filters).length === 0 ?
-                                        <div className="flex mt-5">
-                                            <ActionButton onClick={() => { setSubFilter({ attribute: ' ' }); setIsAddFilterModalOpen(true) }} className={'bg-primary text-white'} text={'Add Filter'} />
-                                        </div>
-                                        :
-                                        <div className="flex mt-5 gap-5">
-                                            <ActionButton onClick={() => { setSubFilter({ attribute: ' ' }); setIsComposeMode(true); setIsAddFilterModalOpen(true) }} className={'bg-primary text-white'} text={'Compose'} />
-                                            <ActionButton onClick={() => { setFilters({}); setIsComposeMode(false); }} icon={TbTrash} className={'bg-secondary text-white'} text={'Clear'} />
-                                        </div>
-                                }
-                                {
-                                    Object.keys(filters).length !== 0 &&
-                                    <div className="flex bg-gray-100 border border-gray-300 shadow rounded-lg p-1 font-mono mt-8 text-sm">{filterToString(filters)}</div>
-                                }
-
-                                {
-                                    (loading && loadingSource === 'create') ?
-                                        <div className={'bg-surface-light/70 text-white px-4 py-3 text-center text-sm rounded mt-12 w-full'}>Loading...</div>
-                                        :
-                                        (
-                                            (Object.keys(filters).length !== 0 && !isValidFilter(filters)) ?
-                                                <div className="text-alt text-sm py-3">Filter Invalid! Please make sure no values are empty</div>
-                                                :
-                                                <Submit className={'bg-surface-light text-white py-3 text-sm rounded-lg mt-12 w-full'} text={'Create Product'} />
-                                        )
-                                }
+                                <button
+                                    onClick={() => { setIsCreateModalOpen(false) }}
+                                    className="p-2 hover:bg-muted rounded-lg transition-colors"
+                                >
+                                    <FiX className="h-5 w-5 text-muted-foreground" />
+                                </button>
                             </div>
-                        </Formik>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-6">
+                            <Card title="Product Information" className="w-full">
+                                <Formik
+                                    initialValues={initialValues}
+                                    validationSchema={productSchema}
+                                    onSubmit={createProduct}
+                                >
+                                    <div className="space-y-6">
+                                        {/* Basic Product Fields */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <FormInput
+                                                name="name"
+                                                type="text"
+                                                label="Product name"
+                                                placeholder="Product name"
+                                            />
+                                            <FormInput
+                                                name="duration"
+                                                type="number"
+                                                label="Duration (months)"
+                                                placeholder="Duration (months)"
+                                            />
+                                            <FormSelect
+                                                name="purpose"
+                                                label="Purpose"
+                                                options={purposeOptions}
+                                            />
+                                            <FormInput
+                                                name="credit_amount"
+                                                type="number"
+                                                label="Max loan amount (GH₵)"
+                                                placeholder="0.00"
+                                            />
+                                        </div>
+
+                                        {/* Eligibility Filters Section */}
+                                        <div className="space-y-4">
+                                            <h4 className="text-lg font-semibold text-foreground">Eligibility Filters</h4>
+                                            <FilterRenderer filter={filters} filters={filters} setFilters={setFilters} />
+
+                                            {Object.keys(filters).length === 0 ? (
+                                                <div className="flex">
+                                                    <ActionButton
+                                                        onClick={() => { setSubFilter({ attribute: ' ' }); setIsAddFilterModalOpen(true) }}
+                                                        variant="default"
+                                                        text="Add Filter"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="flex gap-3">
+                                                    <ActionButton
+                                                        onClick={() => { setSubFilter({ attribute: ' ' }); setIsComposeMode(true); setIsAddFilterModalOpen(true) }}
+                                                        variant="outline"
+                                                        text="Compose"
+                                                    />
+                                                    <ActionButton
+                                                        onClick={() => { setFilters({}); setIsComposeMode(false); }}
+                                                        icon={TbTrash}
+                                                        variant="destructive"
+                                                        text="Clear"
+                                                    />
+                                                </div>
+                                            )}
+
+                                            {Object.keys(filters).length !== 0 && (
+                                                <div className="bg-muted border border-border rounded-lg p-3 font-mono text-sm text-foreground">
+                                                    {filterToString(filters)}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Submit Section */}
+                                        <div className="pt-4 border-t border-border">
+                                            {(loading && loadingSource === 'create') ? (
+                                                <div className="bg-primary/70 text-primary-foreground px-4 py-3 text-center text-sm rounded-lg w-full">
+                                                    Loading...
+                                                </div>
+                                            ) : (
+                                                Object.keys(filters).length !== 0 && !isValidFilter(filters) ? (
+                                                    <div className="text-destructive text-sm py-3 text-center">
+                                                        Filter Invalid! Please make sure no values are empty
+                                                    </div>
+                                                ) : (
+                                                    <Submit
+                                                        className="bg-primary text-primary-foreground py-3 text-sm rounded-lg w-full hover:bg-primary/90 transition-colors"
+                                                        text="Create Product"
+                                                    />
+                                                )
+                                            )}
+                                        </div>
+                                    </div>
+                                </Formik>
+                            </Card>
+                        </div>
                     </div>
                 </div>
             </Modal>
-
-            <Modal2 isOpen={isAddFilterModalOpen}>
-                <div onClick={() => { setIsAddFilterModalOpen(false) }} className="w-screen h-screen flex flex-col items-center p-20 items-center bg-black/50">
-                    <div onClick={(e) => { e.stopPropagation() }} className="max-w-full max-h-full overflow-y-auto bg-white px-14 pt-5 pb-10 rounded">
-                        <div className="flex justify-end"> <FiX className="text-lg cursor-pointer" onClick={() => { setIsAddFilterModalOpen(false) }} /></div>
-                        <div className="text-xl font-semibold">{isComposeMode ? 'Compose Filter' : 'Add Filter'}</div>
-                        {
-                            isComposeMode &&
-                            <div className="flex px-5 mt-5">
-                                <ObjSelect noEmpty value={latestLogicalOp} onChange={(e) => { setLatestLogicalOp(e.target.value) }} name={'log_op'} label={'Boolean operation'} options={{ or: 'OR', and: 'AND' }} />
+            <Modal isOpen={isAddFilterModalOpen}>
+                <div
+                    onClick={() => { setIsAddFilterModalOpen(false) }}
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+                >
+                    <div
+                        onClick={(e) => { e.stopPropagation() }}
+                        className="bg-background w-full max-w-3xl h-full max-h-[90vh] overflow-y-auto rounded-xl shadow-lg border border-border"
+                    >
+                        {/* Modal Header */}
+                        <div className="sticky top-0 bg-background border-b border-border p-6 z-10">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-2xl font-bold text-foreground">
+                                        {isComposeMode ? 'Compose Filter' : 'Add Filter'}
+                                    </h2>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        {isComposeMode
+                                            ? 'Combine existing filters with logical operations'
+                                            : 'Define eligibility criteria for the product'
+                                        }
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => { setIsAddFilterModalOpen(false) }}
+                                    className="p-2 hover:bg-muted rounded-lg transition-colors"
+                                >
+                                    <FiX className="h-5 w-5 text-muted-foreground" />
+                                </button>
                             </div>
-                        }
-                        <div className="grid grid-cols-3 gap-x-5 gap-y-8 px-5 mt-3">
-                            <ObjSelect value={subFilter?.attribute} onChange={(e) => { setSubFilter((prev) => ({ ...prev, attribute: e.target.value })) }} name={'attribute'} label={'Attribute'} options={filterAttributes} />
-                            {subFilter.attribute !== " " && (
-                                <>
-                                    {
-                                        [...numericColumns, 'income'].includes(subFilter.attribute) ?
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-6">
+                            <Card title="Filter Configuration" className="w-full">
+                                <div className="space-y-6">
+                                    {/* Boolean Operation for Compose Mode */}
+                                    {isComposeMode && (
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-foreground">Boolean Operation</label>
+                                            <ObjSelect
+                                                noEmpty
+                                                value={latestLogicalOp}
+                                                onChange={(e) => { setLatestLogicalOp(e.target.value) }}
+                                                name="log_op"
+                                                label="Boolean operation"
+                                                options={{ or: 'OR', and: 'AND' }}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Filter Fields */}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <ObjSelect
+                                            value={subFilter?.attribute}
+                                            onChange={(e) => { setSubFilter((prev) => ({ ...prev, attribute: e.target.value })) }}
+                                            name="attribute"
+                                            label="Attribute"
+                                            options={filterAttributes}
+                                        />
+
+                                        {subFilter.attribute !== " " && (
                                             <>
-                                                <ObjSelect value={subFilter?.operation} onChange={(e) => { setSubFilter((prev) => ({ ...prev, operation: e.target.value })) }} name={'operation'} label={'Operation'} options={operationDescriptions} />
-                                                <AppInput value={subFilter?.operand} onChange={(e) => { setSubFilter((prev) => ({ ...prev, operand: e.target.value })) }} name={'operand'} label={'Operand'} />
+                                                {[...numericColumns, 'income'].includes(subFilter.attribute) ? (
+                                                    <>
+                                                        <ObjSelect
+                                                            value={subFilter?.operation}
+                                                            onChange={(e) => { setSubFilter((prev) => ({ ...prev, operation: e.target.value })) }}
+                                                            name="operation"
+                                                            label="Operation"
+                                                            options={operationDescriptions}
+                                                        />
+                                                        <AppInput
+                                                            value={subFilter?.operand}
+                                                            onChange={(e) => { setSubFilter((prev) => ({ ...prev, operand: e.target.value })) }}
+                                                            name="operand"
+                                                            label="Operand"
+                                                        />
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ObjSelect
+                                                            value={subFilter?.operation}
+                                                            onChange={(e) => { setSubFilter((prev) => ({ ...prev, operation: e.target.value })) }}
+                                                            name="operation"
+                                                            label="Operation"
+                                                            options={{ eq: "equals", neq: 'not equal to' }}
+                                                        />
+                                                        <ObjSelect
+                                                            sameValue
+                                                            value={subFilter?.operand}
+                                                            onChange={(e) => { setSubFilter((prev) => ({ ...prev, operand: e.target.value })) }}
+                                                            name="operand"
+                                                            label="Operand"
+                                                            options={attributeObjMapping[subFilter.attribute]}
+                                                        />
+                                                    </>
+                                                )}
                                             </>
-                                            :
-                                            <>
-                                                <ObjSelect value={subFilter?.operation} onChange={(e) => { setSubFilter((prev) => ({ ...prev, operation: e.target.value })) }} name={'operation'} label={'Operation'} options={{ eq: "equals", neq: 'not equal to' }} />
-                                                <ObjSelect sameValue value={subFilter?.operand} onChange={(e) => { setSubFilter((prev) => ({ ...prev, operand: e.target.value })) }} name={'operand'} label={'Operand'} options={attributeObjMapping[subFilter.attribute]} />
-                                            </>
-                                    }
-                                </>
+                                        )}
+                                    </div>
+
+                                    {/* Filter Preview and Save */}
+                                    {(subFilter.operand && subFilter.operation && (!isComposeMode || (isComposeMode && (latestLogicalOp !== 'none')))) && (
+                                        <div className="space-y-4 pt-4 border-t border-border">
+                                            <div>
+                                                <label className="text-sm font-medium text-foreground mb-2 block">Filter Preview</label>
+                                                <div className="bg-muted border border-border rounded-lg p-3 font-mono text-sm text-foreground">
+                                                    {filterToString(subFilter)}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-end">
+                                                <ActionButton
+                                                    text="Save Filter"
+                                                    noIcon
+                                                    variant="default"
+                                                    onClick={() => {
+                                                        if (isCreateModalOpen) {
+                                                            const resultingFilter = isComposeMode ? { [latestLogicalOp]: [filters, subFilter] } : subFilter
+                                                            setFilters(resultingFilter); setIsAddFilterModalOpen(false);
+                                                        } else if (isDetailModalOpen) {
+                                                            const resultingFilter = isComposeMode ? { [latestLogicalOp]: [selectedProductFilters, subFilter] } : subFilter
+                                                            setSelectedProductFilters(resultingFilter); setIsAddFilterModalOpen(false);
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </Card>
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+            <Modal isOpen={isCustomerDetailModalOpen}>
+                <div
+                    onClick={() => { setIsCustomerDetailModalOpen(false) }}
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+                >
+                    <div
+                        onClick={(e) => { e.stopPropagation() }}
+                        className="bg-background w-full max-w-4xl h-full max-h-[90vh] overflow-y-auto rounded-xl shadow-lg border border-border"
+                    >
+                        {/* Modal Header */}
+                        <div className="sticky top-0 bg-background border-b border-border p-6 z-10">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-2xl font-bold text-foreground">Customer Details</h2>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        View detailed customer information and eligibility data
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => { setIsCustomerDetailModalOpen(false) }}
+                                    className="p-2 hover:bg-muted rounded-lg transition-colors"
+                                >
+                                    <FiX className="h-5 w-5 text-muted-foreground" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-6 space-y-6">
+                            {/* Customer Status Card */}
+                            <Card title="Customer Status" className="w-full">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm font-medium text-muted-foreground">Customer Status:</span>
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        selectedCustomer?.customer
+                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                            : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                                    }`}>
+                                        {selectedCustomer?.customer ? 'Existing Customer' : 'New Applicant'}
+                                    </span>
+                                </div>
+                            </Card>
+
+                            {/* Personal Information Card */}
+                            {selectedCustomer && (
+                                <Card title="Personal Information" className="w-full">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {Object.entries(getApplicantInfoField(selectedCustomer)).map(([key, value], index) => (
+                                            <div key={index} className="space-y-1">
+                                                <label className="text-sm font-medium text-muted-foreground capitalize">
+                                                    {key.replace(/_/g, ' ')}
+                                                </label>
+                                                <div className="text-sm text-foreground font-medium">
+                                                    {value || 'N/A'}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Card>
+                            )}
+
+                            {/* Additional Details Card */}
+                            {selectedCustomer && (
+                                <Card title="Additional Details" className="w-full">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {Object.entries(selectedCustomer)
+                                            .filter(([key]) => !["nc_info", "customer", "id"].includes(key))
+                                            .map(([key, value], index) => (
+                                                <div key={index} className="space-y-1">
+                                                    <label className="text-sm font-medium text-muted-foreground capitalize">
+                                                        {key.replace(/_/g, ' ')}
+                                                    </label>
+                                                    <div className="text-sm text-foreground font-medium">
+                                                        {typeof value === 'number' ? value.toFixed(2) : (value || 'N/A')}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        }
+                                    </div>
+                                </Card>
                             )}
                         </div>
-                        {
-                            (subFilter.operand && subFilter.operation && (!isComposeMode || (isComposeMode && (latestLogicalOp !== 'none')))) &&
-                            <>
-                                <div className="mx-5 mt-5">
-                                    <div className="flex bg-gray-100 border border-gray-300 shadow rounded-xl px-4 py-1 font-mono mt-8 text-sm">{filterToString(subFilter)}</div>
-                                    <ActionButton text={'Save'} noIcon onClick={() => {
-                                        if (isCreateModalOpen) {
-                                            const resultingFilter = isComposeMode ? { [latestLogicalOp]: [filters, subFilter] } : subFilter
-                                            setFilters(resultingFilter); setIsAddFilterModalOpen(false);
-                                        } else if (isDetailModalOpen) {
-                                            const resultingFilter = isComposeMode ? { [latestLogicalOp]: [selectedProductFilters, subFilter] } : subFilter
-                                            setSelectedProductFilters(resultingFilter); setIsAddFilterModalOpen(false);
-                                        }
-                                    }} className={'bg-primary text-white mt-5'} />
-                                </div>
-                            </>
-                        }
-
-                    </div>
-                </div>
-            </Modal2>
-            <Modal2 isOpen={isCustomerDetailModalOpen}>
-                <div onClick={() => { setIsCustomerDetailModalOpen(false) }} className="w-screen h-screen flex flex-col items-center p-20 items-center bg-black/50">
-                    <div onClick={(e) => { e.stopPropagation() }} className="max-w-full max-h-full overflow-y-auto bg-white px-14 pt-5 pb-10 rounded">
-                        <div className="flex justify-end"> <FiX className="text-lg cursor-pointer" onClick={() => { setIsCustomerDetailModalOpen(false) }} /></div>
-                        <div className="text-xl font-semibold mb-10">Customer Details</div>
-                        <div className="flex gap-3">
-                            <div className="font-semibold">customer?:</div>
-                            <div className="">{selectedCustomer?.customer ? 'True' : 'False'}</div>
-                        </div>
-                        {selectedCustomer &&
-                            Object.entries(getApplicantInfoField(selectedCustomer)).map(([key, value]) => (
-                                <div className="flex gap-3">
-                                    <div className="font-semibold">{key}:</div>
-                                    <div className="">{value}</div>
-                                </div>
-                            ))
-                        }
-                        {selectedCustomer &&
-                            Object.entries(selectedCustomer).map(([key, value]) => {
-                                if (["nc_info", "customer", "id"].includes(key)) {
-                                    return null
-                                }
-                                return (
-                                    <div className="flex gap-3">
-                                        <div className="font-semibold">{key}:</div>
-                                        <div className="">{value}</div>
-                                    </div>
-                                )
-                            })
-                        }
-
-                    </div>
-                </div>
-            </Modal2>
-            <Modal isOpen={isDetailModalOpen}>
-                <div onClick={() => { setIsDetailModalOpen(false) }} className="w-screen h-screen overflow-y-auto flex flex-col p-10 items-center bg-black/50">
-                    <div onClick={(e) => { e.stopPropagation() }} className="flex flex-col w-full bg-white px-14 pt-5 pb-10 rounded">
-                        <div className="flex justify-end"> <FiX className="text-lg cursor-pointer" onClick={() => { setIsDetailModalOpen(false) }} /></div>
-                        <div className="text-xl font-semibold">Product Details</div>
-                        <div className="flex-1 grid grid-cols-2 gap-10">
-                            <Formik
-                                initialValues={selectedProduct}
-                                validationSchema={productSchema}
-                                onSubmit={updateProduct}
-                            >
-                                <div>
-                                    <div className="flex flex-col mt-10">
-                                        <div className="grid grid-cols-2 gap-x-5 gap-y-8">
-                                            <FormInput disabled={isUpdateFormFieldDisabled} name={'name'} type={'text'} label={'Product name'} placeholder="Product name" />
-                                            <FormInput disabled={isUpdateFormFieldDisabled} name={'duration'} type={'number'} label={'Duration (months)'} placeholder="Duration (months)" />
-                                            <FormSelect disabled={isUpdateFormFieldDisabled} name={'purpose'} label={'Purpose'} options={purposeOptions} />
-                                            <FormInput disabled={isUpdateFormFieldDisabled} name={'credit_amount'} type={'number'} label={'Max loan amount (GH₵)'} placeholder="0.00" />
-                                        </div>
-                                    </div>
-
-                                    <div className="text-base font-semibold mt-10">Filters</div>
-                                    <FilterRenderer filter={selectedProductFilters} filters={selectedProductFilters} setFilters={setSelectedProductFilters} />
-                                    {
-                                        Object.keys(selectedProductFilters).length === 0 ?
-                                            <div className="flex mt-5">
-                                                <ActionButton onClick={() => { setSubFilter({ attribute: ' ' }); setIsAddFilterModalOpen(true) }} className={'bg-primary text-white'} text={'Add Filter'} />
-                                            </div>
-                                            :
-                                            <div className="flex mt-5 gap-5">
-                                                <ActionButton onClick={() => { setSubFilter({ attribute: ' ' }); setIsComposeMode(true); setIsAddFilterModalOpen(true) }} className={'bg-primary text-white'} text={'Compose'} />
-                                                <ActionButton onClick={() => { setSelectedProductFilters({}); setIsComposeMode(false); }} icon={TbTrash} className={'bg-secondary text-white'} text={'Clear'} />
-                                            </div>
-                                    }
-                                    {
-                                        Object.keys(selectedProductFilters).length !== 0 &&
-                                        <div className="flex bg-gray-100 border border-gray-300 shadow rounded-lg p-1 font-mono mt-8 text-sm">{filterToString(selectedProductFilters)}</div>
-                                    }
-
-                                    <div className="flex w-full justify-between mt-12">
-                                        <ActionButton className={`${isUpdateFormFieldDisabled ? 'bg-primary' : 'bg-alt'} text-white px-4 py-3 text-sm rounded`} noIcon text={isUpdateFormFieldDisabled ? 'Edit' : 'Lock'} onClick={() => setIsUpdateFormFieldDisabled(!isUpdateFormFieldDisabled)} />
-                                        {
-                                            !isUpdateFormFieldDisabled &&
-                                            ((loading && loadingSource === 'update') ?
-                                                <div className={'bg-surface-light/70 text-white px-4 py-3 text-center text-sm rounded'}>Loading...</div>
-                                                :
-                                                <Submit className={'bg-surface-light text-white px-4 py-3 text-sm rounded'} text={'Update Product'} />)
-                                        }
-                                    </div>
-                                </div>
-                            </Formik>
-                            <div className="flex flex-col overflow-y-auto h-full">
-                                <div className="flex justify-between mb-4">
-                                    <div className="text-sm font-medium">Eligible People</div>
-                                    {
-                                        selectedProduct?.eligible_customers?.length &&
-                                            (loading && loadingSource == 'contact') ?
-                                            <div className={'bg-surface-light/70 text-white px-3 py-2 text-center text-sm rounded'}>Sending...</div>
-                                            :
-                                            <ActionButton className={`bg-surface-light text-white px-3 py-2 rounded`} noIcon text={'Send offer messages'} onClick={contactEligible} />
-                                    }
-                                </div>
-
-                                <MUIDataTable
-                                    columns={predictionColumns}
-                                    pageSize={10}
-                                    onRowClick={showCustomerDetails}
-                                    rows={selectedProduct?.eligible_customers ? selectedProduct.eligible_customers : []}
-                                />
-                                <div className="flex">
-                                    <AppInput type={'number'} label={"Limit"} value={eligibleNumber} onChange={(e) => setEligibleNumber(e.target.value)} />
-                                </div>
-                                <div className="flex gap-5 mt-4 text-alt font-semibold">
-                                    <div className="flex gap-3 items-center">
-                                        <div className="text-sm">Customers only</div>
-                                        <CheckBox checked={isCustomerOnly} onChange={() => { setIsCustomerOnly((prev) => !prev) }} />
-                                    </div>
-                                    {/* <div className="flex gap-3 items-center">
-                                        <div className="text-sm">No model</div>
-                                        <CheckBox checked={useModel} onChange={() => { setUseModel((prev) => !prev) }} />
-                                    </div> */}
-                                </div>
-                                {
-                                    (loading && loadingSource == 'eligible') || selectedProduct?.processing ?
-                                        <div className={'bg-primary/70 text-white px-4 py-3 mt-4 text-center text-sm rounded'}>Processing...</div>
-                                        :
-                                        <ActionButton className={`bg-primary text-white px-4 py-3 mt-4 text-sm rounded`} noIcon text={'Find most eligible'} onClick={getEligible} />
-                                }
-                            </div>
-
-                        </div>
-
                     </div>
                 </div>
             </Modal>
-            <div className="flex-1 relative">
-                <div className="absolute w-full h-full top-0 flex flex-col bg-white rounded">
-                    {loading ? (
-                        <div className="bg-white h-[623px] flex flex-col items-center justify-center w-full overflow-auto">
-                            <Loader height={200} width={200} />
-                            <div className="font-semibold">Loading...</div>
+            <Modal isOpen={isDetailModalOpen}>
+                <div
+                    onClick={() => { setIsDetailModalOpen(false) }}
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+                >
+                    <div
+                        onClick={(e) => { e.stopPropagation() }}
+                        className="bg-background w-full max-w-6xl h-full max-h-[90vh] overflow-y-auto rounded-xl shadow-lg border border-border"
+                    >
+                        {/* Modal Header */}
+                        <div className="sticky top-0 bg-background border-b border-border p-6 z-10">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-2xl font-bold text-foreground">Product Details</h2>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        Manage product information and eligible customers
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => { setIsDetailModalOpen(false) }}
+                                    className="p-2 hover:bg-muted rounded-lg transition-colors"
+                                >
+                                    <FiX className="h-5 w-5 text-muted-foreground" />
+                                </button>
+                            </div>
                         </div>
-                    ) : (
-                        <>
-                            <div className="flex px-4 py-2">
-                                <SearchBar placeholder={'Product name'} />
-                                <ActionButton onClick={() => { setIsCreateModalOpen(true) }} text={'Add Product'} className={'ml-auto bg-surface-light text-white'} />
+
+                        {/* Modal Content */}
+                        <div className="p-6">
+                            {/* Tab Navigation */}
+                            <div className="flex justify-center mb-6">
+                                <TabContainer>
+                                    <TabButton
+                                        active={activeTab === 'product-info'}
+                                        onClick={() => setActiveTab('product-info')}
+                                    >
+                                        Product Information
+                                    </TabButton>
+                                    <TabButton
+                                        active={activeTab === 'customer-targeting'}
+                                        onClick={() => setActiveTab('customer-targeting')}
+                                    >
+                                        Customer Targeting
+                                    </TabButton>
+                                </TabContainer>
                             </div>
-                            <div className="h-full">
-                                <MUIDataTable
-                                    columns={columns}
-                                    pageSize={10}
-                                    onRowClick={showProductDetails}
-                                    rows={products}
-                                />
-                            </div>
-                        </>
-                    )}
+
+                            {/* Tab Content */}
+                            {activeTab === 'product-info' && (
+                                <Card title="Product Information" className="h-fit">
+                                    <Formik
+                                        initialValues={selectedProduct}
+                                        validationSchema={productSchema}
+                                        onSubmit={updateProduct}
+                                    >
+                                        <div className="space-y-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <FormInput
+                                                    disabled={isUpdateFormFieldDisabled}
+                                                    name={'name'}
+                                                    type={'text'}
+                                                    label={'Product name'}
+                                                    placeholder="Product name"
+                                                />
+                                                <FormInput
+                                                    disabled={isUpdateFormFieldDisabled}
+                                                    name={'duration'}
+                                                    type={'number'}
+                                                    label={'Duration (months)'}
+                                                    placeholder="Duration (months)"
+                                                />
+                                                <FormSelect
+                                                    disabled={isUpdateFormFieldDisabled}
+                                                    name={'purpose'}
+                                                    label={'Purpose'}
+                                                    options={purposeOptions}
+                                                />
+                                                <FormInput
+                                                    disabled={isUpdateFormFieldDisabled}
+                                                    name={'credit_amount'}
+                                                    type={'number'}
+                                                    label={'Max loan amount (GH₵)'}
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+
+                                            {/* Filters Section */}
+                                            <div className="space-y-4">
+                                                <h4 className="text-lg font-semibold text-foreground">Eligibility Filters</h4>
+                                                <FilterRenderer
+                                                    filter={selectedProductFilters}
+                                                    filters={selectedProductFilters}
+                                                    setFilters={setSelectedProductFilters}
+                                                />
+
+                                                {Object.keys(selectedProductFilters).length === 0 ? (
+                                                    <div className="flex">
+                                                        <ActionButton
+                                                            onClick={() => { setSubFilter({ attribute: ' ' }); setIsAddFilterModalOpen(true) }}
+                                                            className={'bg-primary text-primary-foreground'}
+                                                            text={'Add Filter'}
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex gap-3">
+                                                        <ActionButton
+                                                            onClick={() => { setSubFilter({ attribute: ' ' }); setIsComposeMode(true); setIsAddFilterModalOpen(true) }}
+                                                            className={'bg-primary text-primary-foreground'}
+                                                            text={'Compose'}
+                                                        />
+                                                        <ActionButton
+                                                            onClick={() => { setSelectedProductFilters({}); setIsComposeMode(false); }}
+                                                            icon={TbTrash}
+                                                            variant="destructive"
+                                                            text={'Clear'}
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                {Object.keys(selectedProductFilters).length !== 0 && (
+                                                    <div className="bg-muted border border-border rounded-lg p-3 font-mono text-sm text-foreground">
+                                                        {filterToString(selectedProductFilters)}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className="flex justify-between pt-4 border-t border-border">
+                                                <ActionButton
+                                                    variant={isUpdateFormFieldDisabled ? 'default' : 'outline'}
+                                                    noIcon
+                                                    text={isUpdateFormFieldDisabled ? 'Edit' : 'Lock'}
+                                                    onClick={() => setIsUpdateFormFieldDisabled(!isUpdateFormFieldDisabled)}
+                                                />
+                                                {!isUpdateFormFieldDisabled && (
+                                                    (loading && loadingSource === 'update') ? (
+                                                        <div className="bg-primary/70 text-primary-foreground px-4 py-2 text-center text-sm rounded-lg">
+                                                            Loading...
+                                                        </div>
+                                                    ) : (
+                                                        <Submit
+                                                            className="bg-primary text-primary-foreground px-4 py-2 text-sm rounded-lg hover:bg-primary/90 transition-colors"
+                                                            text="Update Product"
+                                                        />
+                                                    )
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Formik>
+                                </Card>
+                            )}
+
+                            {/* Customer Targeting Tab */}
+                            {activeTab === 'customer-targeting' && (
+                                <Card title="Eligible Customers" className="h-fit">
+                                    <div className="space-y-4">
+                                        {/* Header Actions */}
+                                        <div className="flex justify-between items-center">
+                                            <p className="text-sm text-muted-foreground">
+                                                Manage and contact eligible customers for this product
+                                            </p>
+                                            {selectedProduct?.eligible_customers?.length && (
+                                                (loading && loadingSource === 'contact') ? (
+                                                    <div className="bg-primary/70 text-primary-foreground px-3 py-2 text-center text-sm rounded-lg">
+                                                        Sending...
+                                                    </div>
+                                                ) : (
+                                                    <ActionButton
+                                                        className="px-3 py-2 rounded-lg"
+                                                        noIcon
+                                                        text="Send offer messages"
+                                                        onClick={contactEligible}
+                                                    />
+                                                )
+                                            )}
+                                        </div>
+
+                                        {/* Data Table */}
+                                        <div className="border border-border rounded-lg overflow-hidden">
+                                            <MUIDataTable
+                                                columns={predictionColumns}
+                                                pageSize={10}
+                                                onRowClick={showCustomerDetails}
+                                                rows={selectedProduct?.eligible_customers ? selectedProduct.eligible_customers : []}
+                                            />
+                                        </div>
+
+                                        {/* Controls */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
+                                            <div className="space-y-3">
+                                                <AppInput
+                                                    type="number"
+                                                    label="Limit"
+                                                    value={eligibleNumber}
+                                                    onChange={(e) => setEligibleNumber(e.target.value)}
+                                                />
+                                                <div className="flex items-center gap-3">
+                                                    <CheckBox
+                                                        checked={isCustomerOnly}
+                                                        onChange={() => { setIsCustomerOnly((prev) => !prev) }}
+                                                    />
+                                                    <label className="text-sm font-medium text-foreground">
+                                                        Customers only
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-end">
+                                                {(loading && loadingSource === 'eligible') || selectedProduct?.processing ? (
+                                                    <div className="w-full bg-primary/70 text-primary-foreground px-4 py-3 text-center text-sm rounded-lg">
+                                                        Processing...
+                                                    </div>
+                                                ) : (
+                                                    <ActionButton
+                                                        className="w-full bg-primary text-primary-foreground px-4 py-3 text-sm rounded-lg hover:bg-primary/90 transition-colors"
+                                                        noIcon
+                                                        text="Find most eligible"
+                                                        onClick={getEligible}
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            )}
+                        </div>
+                    </div>
                 </div>
+            </Modal>
+            <div className="flex flex-col w-full h-full">
+                {/* Header Controls — always visible */}
+                <div className="flex flex-col lg:flex-row gap-4 px-4 py-2">
+                    <div className="flex-1 lg:max-w-md">
+                        <SearchBar value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder={'Product name'} />
+                    </div>
+
+                    <ActionButton
+                        onClick={() => { setIsCreateModalOpen(true) }}
+                        text={'Add Product'}
+                        className={'w-full ml-auto sm:w-auto'}
+                    />
+                </div>
+
+                {/* Content */}
+                {loading ? (
+                    <div className="flex-1 flex items-center justify-center min-h-[300px]">
+                        <Loader />
+                    </div>
+                ) : (
+                    <div className="flex-1 min-h-0">
+                        <MUIDataTable
+                            columns={columns}
+                            pageSize={10}
+                            onRowClick={showProductDetails}
+                            rows={products.filter((product) =>
+                                product.name?.toLowerCase().includes(searchText.toLowerCase())
+                            )}
+                            loading={loading}
+                        />
+                    </div>
+                )}
             </div>
         </SideNavLayout>
     );

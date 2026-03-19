@@ -1,16 +1,14 @@
-// IBM Plex Sans - All Weights
-import '@fontsource/ibm-plex-sans/400.css';  // Normal weight
-import '@fontsource/ibm-plex-sans/500.css';  // Medium weight
-import '@fontsource/ibm-plex-sans/600.css';  // Semi-bold weight
-import '@fontsource/ibm-plex-sans/700.css';  // Bold weight
+// Inter - All Weights
+import '@fontsource/inter/400.css';  // Normal weight
+import '@fontsource/inter/500.css';  // Medium weight
+import '@fontsource/inter/600.css';  // Semi-bold weight
+import '@fontsource/inter/700.css';  // Bold weight
 
-// IBM Plex Serif - Only Normal and Bold
-import '@fontsource/ibm-plex-serif/400.css';  // Normal weight
-import '@fontsource/ibm-plex-serif/700.css';  // Bold weight
-
-// IBM Plex Mono - Only Normal and Bold
-import '@fontsource/ibm-plex-mono/400.css';  // Normal weight
-import '@fontsource/ibm-plex-mono/700.css';  // Bold weight
+// Manrope - All Weights
+import '@fontsource/manrope/400.css';  // Normal weight
+import '@fontsource/manrope/500.css';  // Medium weight
+import '@fontsource/manrope/600.css';  // Semi-bold weight
+import '@fontsource/manrope/700.css';  // Bold weight
 
 import "./App.css";
 import { ToastContainer } from "react-toastify";
@@ -32,6 +30,8 @@ import UserContext from './contexts/UserContext';
 import { useState, useContext } from 'react';
 import Register from './pages/Register';
 import AddApplicant from './pages/AddApplicant';
+import Settings from './pages/Settings';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function ProtectedLayout() {
   const { user } = useContext(UserContext);
@@ -39,31 +39,37 @@ function ProtectedLayout() {
 }
 
 function App() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem('credit-ui-user');
+    return stored ? JSON.parse(stored) : null;
+  });
 
   return (
     <Provider store={store}>
-      <UserContext.Provider value={{ user, setUser }}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Login />} />
-            <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
-            <Route element={<ProtectedLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/applicants" element={<Applicants />} />
-              <Route path="/add-applicant" element={<AddApplicant />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/loans" element={<Loans />} />
-              <Route path="/applicant-analysis" element={<ApplicantAnalysis />} />
-              <Route path="/analysis" element={<Analysis />} />
-              <Route path="/forms" element={<Landing />} />
-              <Route path="/german" element={<GermanForm />} />
-              <Route path="/adehyeman" element={<AdehyemanForm />} />
-            </Route>
-          </Routes>
-          <ToastContainer />
-        </BrowserRouter>
-      </UserContext.Provider>
+      <ThemeProvider defaultTheme='transflow-light' storageKey='credit-ui-theme'>
+        <UserContext.Provider value={{ user, setUser }}>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+              <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
+              <Route element={<ProtectedLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/applicants" element={<Applicants />} />
+                <Route path="/add-applicant" element={<AddApplicant />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/loans" element={<Loans />} />
+                <Route path="/applicant-analysis" element={<ApplicantAnalysis />} />
+                <Route path="/analysis" element={<Analysis />} />
+                <Route path="/forms" element={<Landing />} />
+                <Route path="/german" element={<GermanForm />} />
+                <Route path="/adehyeman" element={<AdehyemanForm />} />
+                <Route path="/settings" element={<Settings />} />
+              </Route>
+            </Routes>
+            <ToastContainer />
+          </BrowserRouter>
+        </UserContext.Provider>
+      </ThemeProvider>
     </Provider>
   );
 }

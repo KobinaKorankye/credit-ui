@@ -1,9 +1,9 @@
 import Chart from "react-apexcharts";
 import React, { useEffect, useState } from "react";
 import { Tooltip } from "react-tooltip";
-import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { themePalette } from "../../themePalette";
+import { LuInfo } from "react-icons/lu";
+
+import { getThemeColors, getCSSCustomProperties } from "../utils/colorUtils";
 
 export default function HistogramChart({
   columnArray,
@@ -75,120 +75,248 @@ export default function HistogramChart({
     }
   }, [columnArray, classArray, numBins, highlightPoint]);
 
+  const cssProps = getCSSCustomProperties();
+  const themeColors = getThemeColors();
+
   const options = {
     chart: {
       type: "bar",
       height: height,
-      stacked: false, // Set to false to make the histogram layered
+      stacked: false,
+      background: 'transparent',
       toolbar: {
-        show: !hideToolbar,
+        show: false
+      },
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+        animateGradually: {
+          enabled: true,
+          delay: 150
+        }
+      }
+    },
+    colors: [themeColors.secondary, themeColors.primary],
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        borderRadius: 4,
+        borderRadiusApplication: 'end',
+        borderRadiusWhenStacked: 'last',
+        columnWidth: '75%',
+        grouped: true,
+        dataLabels: {
+          position: 'top'
+        }
       },
     },
-    title: {
-      text: "Histogram Distribution by "+ title,
-      align: "center",
-      style: {
-        fontSize: "15px",
-        fontWeight: "bold",
-        color: "#263238",
-      },
+    dataLabels: {
+      enabled: false
     },
-    grid: {
-      show: showGrid,
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ['transparent']
     },
     xaxis: {
       type: "category",
       title: {
-        text: title, // Label for x-axis
+        text: title,
         style: {
           fontSize: "12px",
-          fontWeight: "bold",
-          color: "#263238",
+          fontWeight: 600,
+          color: `${cssProps.foreground}`,
+          fontFamily: 'Inter, system-ui, sans-serif'
         },
       },
+      labels: {
+        style: {
+          fontSize: "10px",
+          fontWeight: 500,
+          colors: `${cssProps.mutedForeground}`,
+          fontFamily: 'Inter, system-ui, sans-serif'
+        },
+        rotate: -45,
+        rotateAlways: true,
+        maxHeight: 120
+      },
       axisBorder: {
-        show: true,
-        color: "#000000",
-        height: 1,
-        width: "100%",
-        offsetX: 0,
-        offsetY: 0,
+        show: false
       },
       axisTicks: {
-        show: true,
-        borderType: "solid",
-        color: "#000000",
-        height: 6,
-        offsetX: 0,
-        offsetY: 0,
-      },
+        show: false
+      }
     },
     yaxis: {
       title: {
-        text: "Frequency", // Label for y-axis
+        text: "Frequency",
         style: {
           fontSize: "12px",
-          fontWeight: "bold",
-          color: "#263238",
+          fontWeight: 600,
+          color: `${cssProps.foreground}`,
+          fontFamily: 'Inter, system-ui, sans-serif'
         },
       },
+      labels: {
+        style: {
+          fontSize: "11px",
+          fontWeight: 500,
+          colors: `${cssProps.mutedForeground}`,
+          fontFamily: 'Inter, system-ui, sans-serif'
+        },
+        formatter: function(val) {
+          return Math.floor(val).toLocaleString();
+        }
+      },
     },
-    dataLabels: {
-      enabled: false,
+    grid: {
+      show: true,
+      borderColor: `${cssProps.border}`,
+      strokeDashArray: 3,
+      position: 'back',
+      xaxis: {
+        lines: {
+          show: false
+        }
+      },
+      yaxis: {
+        lines: {
+          show: true
+        }
+      },
+      padding: {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0
+      }
+    },
+    legend: {
+      position: "top",
+      horizontalAlign: "center",
+      floating: false,
+      fontSize: '12px',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      fontWeight: 500,
+      labels: {
+        colors: `${cssProps.foreground}`
+      },
+      markers: {
+        width: 12,
+        height: 12,
+        radius: 3
+      },
+      itemMargin: {
+        horizontal: 16,
+        vertical: 8
+      }
     },
     annotations: {
-      xaxis: highlightBin
+      xaxis: highlightPoint !== undefined && highlightPoint !== null
         ? [
           {
-            x: highlightBin,
-            borderColor: "#070707",
+            x: highlightPoint,
+            borderColor: `${cssProps.foreground}`,
+            borderWidth: 2,
+            strokeDashArray: 5,
             label: {
-              borderColor: "#070707",
+              borderColor: `${cssProps.foreground}`,
+              borderWidth: 1,
+              borderRadius: 6,
               style: {
-                color: "#000",
-                background: "#faf",
-                fontSize: '18px',
-                fontWeight: 'bold'
+                color: `${cssProps.background}`,
+                background: `${cssProps.foreground}`,
+                fontSize: '12px',
+                fontWeight: 600,
+                fontFamily: 'Inter, system-ui, sans-serif',
+                padding: {
+                  left: 8,
+                  right: 8,
+                  top: 4,
+                  bottom: 4
+                }
               },
-              text: "Applicant: " + highlightPoint,
+              text: `Applicant: ${highlightPoint}${highlightBin ? ` (Bin: ${highlightBin})` : ''}`,
             },
           },
         ]
         : [],
     },
-    legend: {
-      position: "bottom",
-      horizontalAlign: "center",
-    },
-    plotOptions: {
-      bar: {
-        grouped: true, // Group bars together for layering
+    tooltip: {
+      enabled: true,
+      shared: true,
+      intersect: false,
+      theme: 'dark',
+      style: {
+        fontSize: "12px",
+        fontFamily: 'Inter, system-ui, sans-serif'
       },
-    },
+      custom: function({series, seriesIndex, dataPointIndex, w}) {
+        const seriesName = w.globals.seriesNames[seriesIndex];
+        const binRange = w.globals.labels[dataPointIndex];
+        const value = series[seriesIndex][dataPointIndex];
+
+        return `
+          <div class="px-3 py-2 bg-popover border border-border rounded-lg shadow-lg">
+            <div class="font-medium text-popover-foreground text-sm">${seriesName}</div>
+            <div class="text-xs text-muted-foreground mt-1">
+              Range: <span class="font-semibold text-foreground">${binRange}</span><br/>
+              Count: <span class="font-semibold text-foreground">${value.toLocaleString()}</span>
+            </div>
+          </div>
+        `;
+      }
+    }
   };
 
   return (
-    <div className="relative" id="chart">
-      {
-        showInfo &&
+    <div className="relative w-full" id="chart">
+      {showInfo && (
         <>
-        <div className="absolute text-blue-800 -top-5 left-2 cursor-pointer" data-tooltip-id='desc2'>
-        <FontAwesomeIcon size="xl" icon={faInfoCircle} />
-      </div>
-      <Tooltip style={{ width: '400px' }} id="desc2" place="right">
-        This histogram displays the frequency distribution of <span className="font-bold text-green-500">{title.toLowerCase()}</span> values for past approved loan customers. <br /> It compares defaulting and non-defaulting customers on the same plot.
-      </Tooltip>
+          <div
+            className="absolute top-2 right-2 z-10 p-2 rounded-full bg-muted/80 hover:bg-muted transition-colors cursor-pointer"
+            data-tooltip-id='histogram-desc'
+          >
+            <LuInfo className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <Tooltip
+            id="histogram-desc"
+            place="left"
+            className="max-w-sm"
+            style={{
+              backgroundColor: 'hsl(var(--popover))',
+              color: 'hsl(var(--popover-foreground))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontFamily: 'Inter, system-ui, sans-serif'
+            }}
+          >
+            <div className="space-y-2">
+              <div className="font-semibold">Histogram Distribution</div>
+              <div className="text-xs">
+                This chart shows the frequency distribution of <span className="font-medium text-primary">{title.toLowerCase()}</span> values
+                across different ranges for historical loan customers, comparing defaulting vs non-defaulting patterns.
+              </div>
+              <div className="text-xs text-muted-foreground">
+                The highlighted bin shows where the current applicant falls within this distribution.
+              </div>
+            </div>
+          </Tooltip>
         </>
-      }
-      <Chart
-        options={options}
-        series={[
-          { name: "Defaulting", data: defaultingData, color: themePalette.primary },
-          { name: "Not Defaulting", data: notDefaultingData, color: themePalette.secondary },
-        ]}
-        type="bar"
-        height={height}
-      />
+      )}
+      <div className="rounded-lg overflow-hidden">
+        <Chart
+          options={options}
+          series={[
+            { name: "Defaulting", data: defaultingData },
+            { name: "Not Defaulting", data: notDefaultingData },
+          ]}
+          type="bar"
+          height={height}
+        />
+      </div>
     </div>
   );
 }

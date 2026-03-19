@@ -1,5 +1,6 @@
 import * as d3 from 'd3'; // Import D3 for density estimation
-import { themePalette } from '../../../themePalette';
+
+import { getThemeColors } from '../../utils/colorUtils';
 
 export function getNPLDonutData(dataArray) {
   // Initialize sums for defaults and non-defaults
@@ -18,19 +19,21 @@ export function getNPLDonutData(dataArray) {
     }
   });
 
+  const themeColors = getThemeColors();
+
   // Return the transformed result with color and border fields
   return [
     {
       name: `Non-Performing`,
       value: defaultsSum,
-      color: `${themePalette.secondary}`,  // Color for defaults
-      border: `border-[${themePalette.secondary}]`  // Border class for defaults
+      color: themeColors.secondary,  // Color for defaults
+      border: `border-[${themeColors.secondary}]`  // Border class for defaults
     },
     {
       name: `Performing`,
       value: nonDefaultsSum,
-      color: `${themePalette.primary}`,  // Color for non-defaults
-      border: `border-[${themePalette.primary}]`  // Border class for non-defaults
+      color: themeColors.primary,  // Color for non-defaults
+      border: `border-[${themeColors.primary}]`  // Border class for non-defaults
     }
   ];
 }
@@ -165,19 +168,21 @@ export function getKDEData(dataArray, columnName) {
   const kdeDefaults = kde(epanechnikov(bandwidth), thresholds, defaultValues);
   const kdeNonDefaults = kde(epanechnikov(bandwidth), thresholds, nonDefaultValues);
 
+  const themeColors = getThemeColors();
+
   // Return transformed KDE data for defaults and non-defaults, including colors and borders
   return [
     {
       name: `Defaults`,
       data: kdeDefaults,  // KDE data points for defaults
-      color: `${themePalette.secondary}`,  // Color for defaults
-      border: `border-[${themePalette.secondary}]`  // Border class for defaults
+      color: themeColors.secondary,  // Color for defaults
+      border: `border-[${themeColors.secondary}]`  // Border class for defaults
     },
     {
       name: `Non-defaults`,
       data: kdeNonDefaults,  // KDE data points for non-defaults
-      color: `${themePalette.primary}`,  // Color for non-defaults
-      border: `border-[${themePalette.primary}]`  // Border class for non-defaults
+      color: themeColors.primary,  // Color for non-defaults
+      border: `border-[${themeColors.primary}]`  // Border class for non-defaults
     }
   ];
 }
@@ -199,19 +204,21 @@ export function getKDEDataFromObjOfArrays(X, columnName) {
   const kdeDefaults = kde(epanechnikov(bandwidth), thresholds, defaultValues);
   const kdeNonDefaults = kde(epanechnikov(bandwidth), thresholds, nonDefaultValues);
 
+  const themeColors = getThemeColors();
+
   // Return transformed KDE data for defaults and non-defaults, including colors and borders
   return [
     {
       name: `Defaults`,
       data: kdeDefaults,  // KDE data points for defaults
-      color: `${themePalette.secondary}`,  // Color for defaults
-      border: `border-[${themePalette.secondary}]`  // Border class for defaults
+      color: themeColors.secondary,  // Color for defaults
+      border: `border-[${themeColors.secondary}]`  // Border class for defaults
     },
     {
       name: `Non-defaults`,
       data: kdeNonDefaults,  // KDE data points for non-defaults
-      color: `${themePalette.primary}`,  // Color for non-defaults
-      border: `border-[${themePalette.primary}]`  // Border class for non-defaults
+      color: themeColors.primary,  // Color for non-defaults
+      border: `border-[${themeColors.primary}]`  // Border class for non-defaults
     }
   ];
 }

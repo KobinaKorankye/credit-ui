@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import FormInput from "../components/formik/FormInput";
 import * as Yup from "yup";
 import { Formik } from "formik";
@@ -159,31 +159,20 @@ export default function AdehyemanForm() {
     const saveableData = personalStatusSexEncoder(form);
     try {
       const { data } = await client.post("/gapplicants", saveableData);
-      toast.success("Saved", {
-        position: "top-left",
-      });
-      console.log(data);
     } catch (error) {
       toast.error("Failed to save", {
-        position: "top-left",
+        position: "top-right",
       });
-      console.log(error);
     }
 
     try {
       const { data } = await client.post("/predict", form);
       setFormEntry(form);
-      console.log(form);
-      toast.success("Sent Successfully", {
-        position: "top-left",
-      });
       navigate("/analysis", { state: { formEntry: form, response: data[0], fullRow: {} } });
-      console.log(data);
     } catch (error) {
       toast.error("Failed", {
-        position: "top-left",
+        position: "top-right",
       });
-      console.log(error);
     }
 
     setLoading(false);
@@ -193,9 +182,8 @@ export default function AdehyemanForm() {
     <>
       <SideNavLayout>
         {loading ? (
-          <div className="bg-white flex flex-col items-center justify-center w-full h-full overflow-scroll">
-            <Loader height={200} width={200} />
-            <div className="font-semibold">Analyzing...</div>
+          <div className="flex items-center justify-center w-full h-full">
+            <Loader />
           </div>
         ) : (
           <div className="bg-white flex flex-col items-start w-full pt-10 h-full overflow-y-scroll px-20">

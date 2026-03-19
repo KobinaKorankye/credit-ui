@@ -20,24 +20,23 @@ const FormSelect = ({
 
   return (
     <div className={`${boxClassName}`}>
-      <label className={`block text-[0.8rem] font-medium mb-1.5 text-gray-600`} htmlFor={name}>
+      <label className={`block text-sm font-medium mb-2 text-foreground ${labelClass}`} htmlFor={name}>
         {label}
       </label>
       <div
-        className="flex w-full items-center shadow appearance-none rounded border border-slate-300 px-4 py-2 text-gray-900 
-                leading-tight"
+        className="flex w-full items-center rounded-md border border-input bg-background px-3 py-2 text-foreground shadow-xs transition-colors focus-within:ring-1 focus-within:ring-ring"
       >
-        {Icon && <Icon />}
+        {Icon && <Icon className="mr-2 text-muted-foreground" />}
         <select
           name={name}
           disabled={disabled}
           onBlur={() => setFieldTouched(name)}
           value={values[name] || ''}
           onChange={handleChange}
-          className="w-full focus:outline-none focus:shadow-outline bg-transparent text-sm"
+          className="w-full focus:outline-none bg-transparent text-sm disabled:cursor-not-allowed disabled:opacity-50"
           id={name}
         >
-          <option key={1} value={""}>{""}</option>
+          <option key={1} value={""}>Select an option...</option>
           {options.map(option => (
             <option key={option.value} value={option.value}>{option.label}</option>
           ))}
@@ -45,7 +44,7 @@ const FormSelect = ({
       </div>
       <div className="text-left">
         {touched[name] && errors[name] && (
-          <div className="text-amber-500 text-xs">
+          <div className="text-destructive text-xs mt-1">
             {errors[name]}
           </div>
         )}
